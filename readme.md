@@ -19,7 +19,7 @@ npx tsc --init
 
 ### we install :
 npm install express
-npm install --save-dev @types/express @types/node @types/cors
+npm install --save-dev @types/express @types/node @types/cors @bcryptjs @prisma/client
 npm install touch-cli -g 
 mkdir src
 touch src/server.ts

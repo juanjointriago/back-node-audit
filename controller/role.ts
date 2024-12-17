@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client"
 import { Request, Response } from "express"
+import { validationResult } from "express-validator";
 
 const prisma = new PrismaClient();
 
@@ -51,6 +52,9 @@ export const getRoleById = async(req: Request, res: Response) => {
 
 export const saveRole = async(req: Request, res: Response) => {
     try {
+        const errors = validationResult(req);
+        if(!errors.isEmpty()) return res.status(400).json({errors});
+
         const {name, description} = req.body;
         const newRole = await prisma.role.upsert({
             create: {name, description},
@@ -72,6 +76,9 @@ export const saveRole = async(req: Request, res: Response) => {
 
 export const updateRoleById = async(req: Request, res: Response) => {
     try {
+        const errors = validationResult(req);
+        if(!errors.isEmpty()) return res.status(400).json({errors});
+
         const {id} = req.params;
         const idNumber = parseInt(id, 10);
         const {name, description} = req.body;

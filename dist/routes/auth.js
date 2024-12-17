@@ -2,7 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const auth_1 = require("../controller/auth");
+const express_validator_1 = require("express-validator");
 const router = (0, express_1.Router)();
-router.post('/login', auth_1.login);
+router.post('/login', [
+    (0, express_validator_1.check)('username', 'Username is required').not().isEmpty(),
+    (0, express_validator_1.check)('password', 'Password is required').not().isEmpty(),
+], auth_1.login);
 exports.default = router;
 //# sourceMappingURL=auth.js.map

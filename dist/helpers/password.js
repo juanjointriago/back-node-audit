@@ -12,25 +12,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateJWT = void 0;
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const validateJWT = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const token = req.header('auth-token') || '';
-    if (!token) {
-        return res.status(401).json({
-            msg: 'Non-Authenticated'
-        });
-    }
-    try {
-        jsonwebtoken_1.default.verify(token, process.env.SECRETKEY || '');
-        next();
-    }
-    catch (error) {
-        console.log(error);
-        return res.status(401).json({
-            msg: 'Invalid token'
-        });
-    }
+exports.validatePassword = exports.encryptPassword = void 0;
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const encryptPassword = (password) => __awaiter(void 0, void 0, void 0, function* () {
+    const salt = bcryptjs_1.default.genSaltSync(10);
+    const encryptedPassword = bcryptjs_1.default.hashSync(password, salt);
+    return encryptedPassword;
 });
-exports.validateJWT = validateJWT;
-//# sourceMappingURL=validate-jwt.js.map
+exports.encryptPassword = encryptPassword;
+const validatePassword = (password, hash) => __awaiter(void 0, void 0, void 0, function* () {
+    const validPassword = bcryptjs_1.default.compareSync(password, hash);
+    return validPassword ? true : false;
+});
+exports.validatePassword = validatePassword;
+//# sourceMappingURL=password.js.map

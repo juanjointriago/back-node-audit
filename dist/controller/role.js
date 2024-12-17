@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteRoleById = exports.updateRoleById = exports.saveRole = exports.getRoleById = exports.getAllRoles = void 0;
 const client_1 = require("@prisma/client");
+const express_validator_1 = require("express-validator");
 const prisma = new client_1.PrismaClient();
 const getAllRoles = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -59,6 +60,9 @@ const getRoleById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.getRoleById = getRoleById;
 const saveRole = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const errors = (0, express_validator_1.validationResult)(req);
+        if (!errors.isEmpty())
+            return res.status(400).json({ errors });
         const { name, description } = req.body;
         const newRole = yield prisma.role.upsert({
             create: { name, description },
@@ -81,6 +85,9 @@ const saveRole = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.saveRole = saveRole;
 const updateRoleById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const errors = (0, express_validator_1.validationResult)(req);
+        if (!errors.isEmpty())
+            return res.status(400).json({ errors });
         const { id } = req.params;
         const idNumber = parseInt(id, 10);
         const { name, description } = req.body;

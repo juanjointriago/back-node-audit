@@ -12,6 +12,8 @@
   "license": "ISC",
   "description": "npm init -y\r npm install --save-dev typescript\r npx tsc --init\r ### we need update in the compiler options object with the netx atributes : the file tsconfig.json\r {\r   \"compilerOptions\": {\r     \"target\": \"es2016\",\r     \"module\": \"commonjs\",\r     \"rootDir\": \"./src\",\r     \"outDir\": \"./dist\",\r     \"esModuleInterop\": true,\r     \"forceConsistentCasingInFileNames\": true,  \r     \"strict\": true,\r     \"skipLibCheck\": true\r   }\r }",
   "devDependencies": {
+    "@prisma/client": "^6.1.0",
+    "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.7",
@@ -24,11 +26,11 @@
     "typescript": "^5.7.2"
   },
   "dependencies": {
-    "@prisma/client": "^6.0.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "express-validator": "^7.2.0",
     "jsonwebtoken": "^9.0.2"
   },
   "repository": {

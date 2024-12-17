@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
-import { Request, Response } from "express"
-const bcryptjs = require('bcryptjs');
+import { Request, Response } from "express";
+import { encryptPassword} from "../helpers/password";
+import { validationResult } from "express-validator";
 
 const prisma = new PrismaClient();
 export const getAllUsers = async(req: Request, res: Response) => {
@@ -57,9 +58,11 @@ export const getUserById = async(req: Request, res: Response) => {
 
 export const saveUser = async(req: Request, res: Response) => {
     try {
+        const errors = validationResult(req);
+        if(!errors.isEmpty()) return res.status(400).json({errors});
+
         const {username, password, email, profileId, roleId} = req.body; 
-        const salt = bcryptjs.genSaltSync(10);
-        const encryptedPassword = bcryptjs.hashSync(password, salt);
+        const encryptedPassword = await encryptPassword(password);
 
         const existingUser = await prisma.user.findUnique({
             where: { username },
@@ -140,11 +143,13 @@ export const saveUser = async(req: Request, res: Response) => {
 
 export const updateUserById = async(req: Request, res: Response) => {
     try {
+        const errors = validationResult(req);
+        if(!errors.isEmpty()) return res.status(400).json({errors});
+
         const {id} = req.params;
         const idNumber = parseInt(id, 10);
         const {username, password, email, profileId, roleId} = req.body;
-        const salt = bcryptjs.genSaltSync(10);
-        const encryptedPassword = bcryptjs.hashSync(password, salt);
+        const encryptedPassword = await encryptPassword(password);;
         if (!id || isNaN(idNumber)) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
         
         const existingUser = await prisma.user.findFirst({

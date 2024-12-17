@@ -1,17 +1,33 @@
 import { Router } from "express";
 import {  getAllUsers, getUserById, saveUser, updateUserById, deleteUserById} from "../controller/user";
 import { validateJWT } from "../middlewares/validate-jwt";
-
+import { check} from "express-validator";
 const router = Router();
 
 router.get('/', getAllUsers);
 router.get('/:id', 
     validateJWT,
     getUserById);
-router.post('/', 
+router.post('/',
+    [
+        check('username', 'Username is required').not().isEmpty(),
+        check('password', 'Password is required').not().isEmpty(),
+        check('email', 'Email is required').not().isEmpty(),
+        check('email', 'Invalid email').isEmail(),
+        check('profileId', 'Profile id is required').not().isEmpty(),
+        check('roleId', 'Role id is required').not().isEmpty(),
+    ],
     validateJWT,
     saveUser);
 router.put('/:id', 
+    [
+        check('username', 'Username is required').not().isEmpty(),
+        check('password', 'Password is required').not().isEmpty(),
+        check('email', 'Email is required').not().isEmpty(),
+        check('email', 'Invalid email').isEmail(),
+        check('profileId', 'Profile id is required').not().isEmpty(),
+        check('roleId', 'Role id is required').not().isEmpty(),
+    ],
     validateJWT,
     updateUserById);
 router.delete('/:id', 
