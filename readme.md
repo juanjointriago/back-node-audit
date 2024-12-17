@@ -19,7 +19,7 @@ npx tsc --init
 
 ### we install :
 npm install express
-npm install --save-dev @types/express @types/node
+npm install --save-dev @types/express @types/node @types/cors
 npm install touch-cli -g 
 mkdir src
 touch src/server.ts
@@ -39,3 +39,7 @@ touch src/server.ts
 `````The dist folder is the directory where TypeScript transpiles the .ts files into .js files. The dist folder and server.js are generated after running the npm run build command, which compiles the TypeScript code to JavaScript as per the configuration in tsconfig.json. This folder is not directly created or modified by the developer; it's managed through the build process controlled by the TypeScript compiler. `````
 
 `````That’s the complete guide to setting up a Node.js project with TypeScript. This setup gives you a strong foundation for building robust and maintainable server-side applications.`````
+
+## for create tables with prisma: npx prisma generate 
+## then: npx prisma migrate dev --name init
+## for execute typescript compilator in watch mode: open a new terminal in folder project and paste command: tsc --watch 
