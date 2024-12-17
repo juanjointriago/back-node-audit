@@ -5,7 +5,6 @@ const jwt = require('jsonwebtoken');
 
 export const validateJWT = async(req: Request, res: Response, next: any) => {
     const token = req.header('auth-token');
-    console.log(token);
     if(!token){
         res.status(401).json({
             msg: 'Non-Authenticated'

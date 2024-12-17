@@ -13,7 +13,6 @@ exports.validateJWT = void 0;
 const jwt = require('jsonwebtoken');
 const validateJWT = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const token = req.header('auth-token');
-    console.log(token);
     if (!token) {
         res.status(401).json({
             msg: 'Non-Authenticated'

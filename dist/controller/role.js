@@ -33,10 +33,11 @@ const getAllRoles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.getAllRoles = getAllRoles;
 const getRoleById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { id } = req.body;
-        if (!id)
+        const { id } = req.params;
+        const idNumber = parseInt(id, 10);
+        if (!id || isNaN(idNumber))
             res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
-        const existingRole = yield prisma.role.findFirst({ where: { id: id } });
+        const existingRole = yield prisma.role.findFirst({ where: { id: idNumber } });
         if (!existingRole)
             res.status(404).json({ msg: 'Role not found', error: false, data: [] });
         res.json({
@@ -59,10 +60,14 @@ exports.getRoleById = getRoleById;
 const saveRole = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { name, description } = req.body;
-        const newRole = yield prisma.role.create({ data: { name, description } });
+        const newRole = yield prisma.role.upsert({
+            create: { name, description },
+            update: { name, description },
+            where: { name }
+        });
         res.json({
             newRole,
-            msg: `Role ${newRole.id} created`
+            msg: `Role ${newRole.name} created`
         });
     }
     catch (error) {
@@ -76,22 +81,24 @@ const saveRole = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.saveRole = saveRole;
 const updateRoleById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { id, name, description } = req.body;
-        if (!id)
+        const { id } = req.params;
+        const idNumber = parseInt(id, 10);
+        const { name, description } = req.body;
+        if (!id || isNaN(idNumber))
             res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
-        const updatingRole = yield prisma.role.findFirst({ where: { id: id } });
+        const updatingRole = yield prisma.role.findFirst({ where: { id: idNumber } });
         if (!updatingRole)
             res.status(404).json({ msg: 'Role not found', error: false, data: [] });
         yield prisma.role.update({
             where: {
-                id: id
+                id: idNumber
             },
             data: {
                 name, description
             }
         });
         res.status(200).json({
-            msg: `Role ${id} updated`,
+            msg: `Role ${name} updated`,
             error: false,
             records: 1
         });
@@ -107,12 +114,13 @@ const updateRoleById = (req, res) => __awaiter(void 0, void 0, void 0, function*
 exports.updateRoleById = updateRoleById;
 const deleteRoleById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { id } = req.body;
-        if (!id)
+        const { id } = req.params;
+        const idNumber = parseInt(id, 10);
+        if (!id || isNaN(idNumber))
             res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
         yield prisma.role.update({
             where: {
-                id: id
+                id: idNumber
             },
             data: {
                 active: 0

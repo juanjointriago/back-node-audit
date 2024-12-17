@@ -23,9 +23,12 @@ export const getAllRoles = async(req: Request, res: Response) => {
 
 export const getRoleById = async(req: Request, res: Response) => {
     try {
-        const {id} = req.body;
-        if (!id) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
-        const existingRole = await prisma.role.findFirst({where: {id: id}});
+        const {id} = req.params;
+        const idNumber = parseInt(id, 10);
+        if (!id|| isNaN(idNumber)) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
+        
+        const existingRole = await prisma.role.findFirst({where: {id: idNumber}});
+        
         if(!existingRole)
             res.status(404).json({msg: 'Role not found', error: false, data:[]})
         
@@ -49,10 +52,14 @@ export const getRoleById = async(req: Request, res: Response) => {
 export const saveRole = async(req: Request, res: Response) => {
     try {
         const {name, description} = req.body;
-        const newRole = await prisma.role.create({data: {name, description}});
+        const newRole = await prisma.role.upsert({
+            create: {name, description},
+            update: {name, description},
+            where: {name}
+            })
         res.json({
             newRole,
-            msg: `Role ${newRole.id} created`
+            msg: `Role ${newRole.name} created`
         });
     } catch (error) {
         console.log(error);
@@ -65,22 +72,24 @@ export const saveRole = async(req: Request, res: Response) => {
 
 export const updateRoleById = async(req: Request, res: Response) => {
     try {
-        const {id, name, description} = req.body;
-        if (!id) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
-        const updatingRole = await prisma.role.findFirst({where: {id: id}});
+        const {id} = req.params;
+        const idNumber = parseInt(id, 10);
+        const {name, description} = req.body;
+        if (!id || isNaN(idNumber)) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
+        const updatingRole = await prisma.role.findFirst({where: {id: idNumber}});
         if(!updatingRole)
             res.status(404).json({msg: 'Role not found', error: false, data:[]})
         
         await prisma.role.update({
             where: {
-                id: id
+                id: idNumber
             },
             data: {
                 name, description
             }
             });
         res.status(200).json({
-            msg: `Role ${id} updated`,
+            msg: `Role ${name} updated`,
             error: false,
             records: 1
         })
@@ -95,12 +104,13 @@ export const updateRoleById = async(req: Request, res: Response) => {
 
 export const deleteRoleById = async(req: Request, res: Response) => {
     try {
-        const {id} = req.body;
-        if (!id) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
+        const {id} = req.params;
+        const idNumber = parseInt(id, 10);
+        if (!id || isNaN(idNumber)) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
 
         await prisma.role.update({
             where: {
-                id: id
+                id: idNumber
             },
             data: {
                 active: 0

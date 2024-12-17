@@ -23,9 +23,12 @@ export const getAllProfiles = async(req: Request, res: Response) => {
 
 export const getProfileById = async(req: Request, res: Response) => {
     try {
-        const {id} = req.body;
-        if (!id) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
-        const existingProfile = await prisma.profile.findFirst({where: {id: id}});
+        const {id} = req.params;
+        const idNumber = parseInt(id, 10);
+        if (!id || isNaN(idNumber)) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
+        
+        const existingProfile = await prisma.profile.findFirst({where: {id: idNumber}});
+        
         if(!existingProfile)
             res.status(404).json({msg: 'Profile not found', error: false, data:[]})
     
@@ -49,10 +52,14 @@ export const getProfileById = async(req: Request, res: Response) => {
 export const saveProfile = async(req: Request, res: Response) => {
     try {
         const {name, description} = req.body;
-        const newProfile = await prisma.profile.create({data: {name, description}});
+        const newProfile = await prisma.profile.upsert({
+            create: {name, description},
+            update: {name, description},
+            where: {name}
+            })
         res.json({
             newProfile,
-            msg: `Profile ${newProfile.id} created`
+            msg: `Profile ${newProfile.name} created`
         });
     } catch (error) {
         console.log(error);
@@ -65,22 +72,24 @@ export const saveProfile = async(req: Request, res: Response) => {
 
 export const updateProfileById = async(req: Request, res: Response) => {
     try {
-        const {id, name, description} = req.body;
-        if (!id) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
-        const updatingProfile = await prisma.profile.findFirst({where: {id: id}});
+        const {id} = req.params;
+        const idNumber = parseInt(id, 10);
+        const {name, description} = req.body;
+        if (!id || isNaN(idNumber)) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
+        const updatingProfile = await prisma.profile.findFirst({where: {id: idNumber}});
         if(!updatingProfile)
             res.status(404).json({msg: 'Profile not found', error: false, data:[]})
         
         await prisma.profile.update({
             where: {
-                id: id
+                id: idNumber
             },
             data: {
                 name, description
             }
             });
         res.status(200).json({
-            msg: `Profile ${id} updated`,
+            msg: `Profile ${name} updated`,
             error: false,
             records: 1
         })
@@ -95,12 +104,13 @@ export const updateProfileById = async(req: Request, res: Response) => {
 
 export const deleteProfileById = async(req: Request, res: Response) => {
     try {
-        const {id} = req.body;
-        if (!id) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
+        const {id} = req.params;
+        const idNumber = parseInt(id, 10);
+        if (!id || isNaN(idNumber)) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
 
         await prisma.profile.update({
             where: {
-                id: id
+                id: idNumber
             },
             data: {
                 active: 0

@@ -33,10 +33,11 @@ const getAllProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function*
 exports.getAllProfiles = getAllProfiles;
 const getProfileById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { id } = req.body;
-        if (!id)
+        const { id } = req.params;
+        const idNumber = parseInt(id, 10);
+        if (!id || isNaN(idNumber))
             res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
-        const existingProfile = yield prisma.profile.findFirst({ where: { id: id } });
+        const existingProfile = yield prisma.profile.findFirst({ where: { id: idNumber } });
         if (!existingProfile)
             res.status(404).json({ msg: 'Profile not found', error: false, data: [] });
         res.json({
@@ -59,10 +60,14 @@ exports.getProfileById = getProfileById;
 const saveProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { name, description } = req.body;
-        const newProfile = yield prisma.profile.create({ data: { name, description } });
+        const newProfile = yield prisma.profile.upsert({
+            create: { name, description },
+            update: { name, description },
+            where: { name }
+        });
         res.json({
             newProfile,
-            msg: `Profile ${newProfile.id} created`
+            msg: `Profile ${newProfile.name} created`
         });
     }
     catch (error) {
@@ -76,22 +81,24 @@ const saveProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.saveProfile = saveProfile;
 const updateProfileById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { id, name, description } = req.body;
-        if (!id)
+        const { id } = req.params;
+        const idNumber = parseInt(id, 10);
+        const { name, description } = req.body;
+        if (!id || isNaN(idNumber))
             res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
-        const updatingProfile = yield prisma.profile.findFirst({ where: { id: id } });
+        const updatingProfile = yield prisma.profile.findFirst({ where: { id: idNumber } });
         if (!updatingProfile)
             res.status(404).json({ msg: 'Profile not found', error: false, data: [] });
         yield prisma.profile.update({
             where: {
-                id: id
+                id: idNumber
             },
             data: {
                 name, description
             }
         });
         res.status(200).json({
-            msg: `Profile ${id} updated`,
+            msg: `Profile ${name} updated`,
             error: false,
             records: 1
         });
@@ -107,12 +114,13 @@ const updateProfileById = (req, res) => __awaiter(void 0, void 0, void 0, functi
 exports.updateProfileById = updateProfileById;
 const deleteProfileById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { id } = req.body;
-        if (!id)
+        const { id } = req.params;
+        const idNumber = parseInt(id, 10);
+        if (!id || isNaN(idNumber))
             res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
         yield prisma.profile.update({
             where: {
-                id: id
+                id: idNumber
             },
             data: {
                 active: 0

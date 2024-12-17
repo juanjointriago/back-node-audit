@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express"
+const bcryptjs = require('bcryptjs');
 
 const prisma = new PrismaClient();
 export const getAllUsers = async(req: Request, res: Response) => {
@@ -22,18 +23,24 @@ export const getAllUsers = async(req: Request, res: Response) => {
 
 export const getUserById = async(req: Request, res: Response) => {
     try {
-        const {id} = req.body;
-        if (!id) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
-        const existingUser = await prisma.user.findFirst({where: {id: id}});
+        const {id} = req.params;
+        const idNumber = parseInt(id, 10);
+        if (!id || isNaN(idNumber)) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
+        
+        const existingUser = await prisma.user.findFirst({where: {id: idNumber}});
+        
         if(!existingUser)
             res.status(404).json({msg: 'User not found', error: false, data:[]})
-
-        res.json({
-            msg: 'ok',
-            error: false,
-            records: 1,
-            data: existingUser
-        })
+        
+        else{
+            res.json({
+                msg: 'ok',
+                error: false,
+                records: 1,
+                data: existingUser
+            })
+        }
+        
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -47,11 +54,17 @@ export const getUserById = async(req: Request, res: Response) => {
 
 export const saveUser = async(req: Request, res: Response) => {
     try {
-        const {username, password, email, profileId} = req.body;
-        const newUser = await prisma.user.create({data: {username, password, email, profileId}}); 
+        const {username, password, email, profileId} = req.body; 
+        const salt = bcryptjs.genSaltSync(10);
+        let encryptedPassword = bcryptjs.hashSync(password, salt);
+        const newUser = await prisma.user.upsert({
+            create: {username, password: encryptedPassword, email, profileId},
+            update: {username, password: encryptedPassword, email, profileId, active:1},
+            where: {username}
+          })
         res.json({
             newUser,
-            msg: `User ${newUser.id} created`
+            msg: `User ${newUser.username} created`
         });
     } catch (error) {
         console.log(error);
@@ -64,22 +77,24 @@ export const saveUser = async(req: Request, res: Response) => {
 
 export const updateUserById = async(req: Request, res: Response) => {
     try {
-        const {id, username, password, email, profileId} = req.body;
-        if (!id) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
-        const updatingUser = await prisma.user.findFirst({where: {id: id}});
+        const {id} = req.params;
+        const idNumber = parseInt(id, 10);
+        const {username, password, email, profileId} = req.body;
+        if (!id || isNaN(idNumber)) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
+        const updatingUser = await prisma.user.findFirst({where: {id: idNumber}});
         if(!updatingUser)
             res.status(404).json({msg: 'User not found', error: false, data:[]})
         
         await prisma.user.update({
             where: {
-                id: id
+                id: idNumber
             },
             data: {
                 username, password, email, profileId
             }
           });
         res.status(200).json({
-            msg: `User ${id} updated`,
+            msg: `User ${username} updated`,
             error: false,
             records: 1
         })
@@ -94,12 +109,13 @@ export const updateUserById = async(req: Request, res: Response) => {
 
 export const deleteUserById = async(req: Request, res: Response) => {
     try {
-        const {id} = req.body;
-        if (!id) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
+        const {id} = req.params;
+        const idNumber = parseInt(id, 10);
+        if (!id || isNaN(idNumber)) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
 
         await prisma.user.update({
             where: {
-                id: id
+                id: idNumber
             },
             data: {
                 active: 0
