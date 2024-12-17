@@ -18,11 +18,14 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { username, password } = req.body;
         let generatedToken;
+        let validPassword = false;
         if (!username || !password)
             res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
         const existingUser = yield prisma.user.findFirst({ where: { username: username, active: 1 } });
-        const validPassword = bcryptjs.compareSync(password, existingUser === null || existingUser === void 0 ? void 0 : existingUser.password);
-        if (!(existingUser && validPassword))
+        console.log(existingUser);
+        if (existingUser)
+            validPassword = bcryptjs.compareSync(password, existingUser === null || existingUser === void 0 ? void 0 : existingUser.password);
+        if (!validPassword)
             res.status(404).json({ msg: 'Invalid User/Password', error: false, data: [] });
         else {
             generatedToken = yield (0, generate_jwt_1.generateJWT)(existingUser.id);

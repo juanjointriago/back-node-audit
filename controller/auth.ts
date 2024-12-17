@@ -8,12 +8,14 @@ export const login = async(req: Request, res: Response) => {
     try {
         const {username, password} = req.body;
         let generatedToken;
+        let validPassword = false;
         if (!username || !password) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
         
-        const existingUser = await prisma.user.findFirst({where: {username: username, active: 1}});
-        const validPassword = bcryptjs.compareSync(password, existingUser?.password);
+        const existingUser = await prisma.user.findFirst({where: {username: username, active: 1}}); console.log(existingUser);
         
-        if(!(existingUser && validPassword))
+        if(existingUser) validPassword = bcryptjs.compareSync(password, existingUser?.password);
+        
+        if(!validPassword)
             res.status(404).json({msg: 'Invalid User/Password', error: false, data:[]});
         else{
             generatedToken = await generateJWT(existingUser.id);
