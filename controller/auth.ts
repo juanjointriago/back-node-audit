@@ -7,9 +7,6 @@ import { validationResult } from "express-validator";
 const prisma = new PrismaClient();
 export const login = async(req: Request, res: Response) => {
     try {
-        const errors = validationResult(req);
-        if(!errors.isEmpty()) return res.status(400).json({errors});
-
         const {username, password} = req.body;
         let generatedToken;
         let validPassword = false;
@@ -42,4 +39,8 @@ export const login = async(req: Request, res: Response) => {
 
         })
     }
+}
+
+export const logout = async(req: Request, res: Response) => {
+    
 }

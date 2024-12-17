@@ -9,17 +9,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.login = void 0;
+exports.logout = exports.login = void 0;
 const client_1 = require("@prisma/client");
 const generate_jwt_1 = require("../helpers/generate-jwt");
 const password_1 = require("../helpers/password");
-const express_validator_1 = require("express-validator");
 const prisma = new client_1.PrismaClient();
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const errors = (0, express_validator_1.validationResult)(req);
-        if (!errors.isEmpty())
-            return res.status(400).json({ errors });
         const { username, password } = req.body;
         let generatedToken;
         let validPassword = false;
@@ -50,4 +46,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.login = login;
+const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+exports.logout = logout;
 //# sourceMappingURL=auth.js.map

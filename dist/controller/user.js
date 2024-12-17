@@ -12,7 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteUserById = exports.updateUserById = exports.saveUser = exports.getUserById = exports.getAllUsers = void 0;
 const client_1 = require("@prisma/client");
 const password_1 = require("../helpers/password");
-const express_validator_1 = require("express-validator");
 const prisma = new client_1.PrismaClient();
 const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -69,9 +68,6 @@ const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.getUserById = getUserById;
 const saveUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const errors = (0, express_validator_1.validationResult)(req);
-        if (!errors.isEmpty())
-            return res.status(400).json({ errors });
         const { username, password, email, profileId, roleId } = req.body;
         const encryptedPassword = yield (0, password_1.encryptPassword)(password);
         const existingUser = yield prisma.user.findUnique({
@@ -151,9 +147,6 @@ const saveUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.saveUser = saveUser;
 const updateUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const errors = (0, express_validator_1.validationResult)(req);
-        if (!errors.isEmpty())
-            return res.status(400).json({ errors });
         const { id } = req.params;
         const idNumber = parseInt(id, 10);
         const { username, password, email, profileId, roleId } = req.body;

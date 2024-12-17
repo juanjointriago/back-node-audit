@@ -58,9 +58,6 @@ export const getUserById = async(req: Request, res: Response) => {
 
 export const saveUser = async(req: Request, res: Response) => {
     try {
-        const errors = validationResult(req);
-        if(!errors.isEmpty()) return res.status(400).json({errors});
-
         const {username, password, email, profileId, roleId} = req.body; 
         const encryptedPassword = await encryptPassword(password);
 
@@ -143,9 +140,6 @@ export const saveUser = async(req: Request, res: Response) => {
 
 export const updateUserById = async(req: Request, res: Response) => {
     try {
-        const errors = validationResult(req);
-        if(!errors.isEmpty()) return res.status(400).json({errors});
-
         const {id} = req.params;
         const idNumber = parseInt(id, 10);
         const {username, password, email, profileId, roleId} = req.body;

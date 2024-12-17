@@ -2,6 +2,7 @@ import { Router } from "express";
 import {  getAllUsers, getUserById, saveUser, updateUserById, deleteUserById} from "../controller/user";
 import { validateJWT } from "../middlewares/validate-jwt";
 import { check} from "express-validator";
+import { validateFields } from "../middlewares/validate-fields";
 const router = Router();
 
 router.get('/', getAllUsers);
@@ -16,6 +17,7 @@ router.post('/',
         check('email', 'Invalid email').isEmail(),
         check('profileId', 'Profile id is required').not().isEmpty(),
         check('roleId', 'Role id is required').not().isEmpty(),
+        validateFields
     ],
     validateJWT,
     saveUser);
@@ -27,6 +29,7 @@ router.put('/:id',
         check('email', 'Invalid email').isEmail(),
         check('profileId', 'Profile id is required').not().isEmpty(),
         check('roleId', 'Role id is required').not().isEmpty(),
+        validateFields
     ],
     validateJWT,
     updateUserById);
