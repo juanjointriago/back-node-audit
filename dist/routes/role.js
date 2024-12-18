@@ -14,10 +14,8 @@ router.post('/', [
 ], validate_jwt_1.validateJWT, role_1.saveRole);
 router.put('/:id', [
     (0, express_validator_1.check)('name', 'Name is required').not().isEmpty(),
-    validate_fields_1.validateFields,
-    validate_jwt_1.validateJWT,
-    role_1.updateRoleById
-]);
+    validate_fields_1.validateFields
+], validate_jwt_1.validateJWT, role_1.updateRoleById);
 router.delete('/:id', validate_jwt_1.validateJWT, role_1.deleteRoleById);
 exports.default = router;
 //# sourceMappingURL=role.js.map

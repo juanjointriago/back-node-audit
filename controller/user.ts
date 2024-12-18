@@ -5,21 +5,29 @@ import { encryptPassword} from "../helpers/password";
 const prisma = new PrismaClient();
 export const getAllUsers = async(req: Request, res: Response) => {
     try {
+        const page = parseInt(req.query.page as string) || 1;
+        const pageSize = parseInt(req.query.pageSize as string) || 10;
+        const skip = (page - 1) * pageSize;
+
         const users = await prisma.user.findMany({
             where: {active : 1},
-            include: { roles: true }});
+            include: { roles: true },
+            skip,
+            take: pageSize
+        });
         res.json({
             msg: 'ok',
             error: false,
             records: users.length,
+            page,
             data: users
-        })
+        });
     } catch (error) {
         console.log(error);
         res.status(500).json({
             msg: 'Error getting users',
             error
-        })
+        });
     }
 }
 
@@ -34,14 +42,14 @@ export const getUserById = async(req: Request, res: Response) => {
             include: { roles: true }});
         
         if(!existingUser)
-            res.status(404).json({msg: 'User not found', error: false, data:[]})
+            res.status(404).json({msg: 'User not found', error: false, data:[]});
         else{
             res.json({
                 msg: 'ok',
                 error: false,
                 records: 1,
                 data: existingUser
-            })
+            });
         }
         
     } catch (error) {
@@ -51,7 +59,7 @@ export const getUserById = async(req: Request, res: Response) => {
             error: error,
             data: []
 
-        })
+        });
     }
 }
 
@@ -133,7 +141,7 @@ export const saveUser = async(req: Request, res: Response) => {
         res.status(500).json({
             msg: 'Somenthing went wrong',
             error
-        })
+        });
     }
 }
 
@@ -151,7 +159,7 @@ export const updateUserById = async(req: Request, res: Response) => {
         });
         
         if(!existingUser)
-            res.status(404).json({msg: 'User not found', error: false, data:[]})
+            res.status(404).json({msg: 'User not found', error: false, data:[]});
         
         const existingRole = existingUser.roles.find((role: { roleId: number }) => role.roleId === roleId);
         if (existingRole) {
@@ -172,7 +180,7 @@ export const updateUserById = async(req: Request, res: Response) => {
                 msg: `User ${username} updated with existing role`,
                 error: false,
                 records: 1
-            })
+            });
         }
         else{
             const updatedUser = await prisma.user.update({
@@ -198,7 +206,7 @@ export const updateUserById = async(req: Request, res: Response) => {
                 msg: `User ${username} updated and new role assigned`,
                 error: false,
                 records: 1
-            })
+            });
         }
 
     } catch (error) {
@@ -206,7 +214,7 @@ export const updateUserById = async(req: Request, res: Response) => {
         res.status(500).json({
             msg: 'Somenthing went wrong',
             error
-        })
+        });
     }
 }
 
@@ -223,7 +231,7 @@ export const deleteUserById = async(req: Request, res: Response) => {
             data: {
                 active: 0
             }
-            });
+        });
         
         res.status(200).json({
             msg: `User ${id} deleted`,
@@ -234,6 +242,6 @@ export const deleteUserById = async(req: Request, res: Response) => {
         res.status(500).json({
             msg: 'Somenthing went wrong',
             error
-        })
+        });
     }
 }

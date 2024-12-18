@@ -18,7 +18,7 @@ export const getAllRoles = async(req: Request, res: Response) => {
         res.status(500).json({
             msg: 'Error getting roles',
             error
-        })
+        });
     }
 }
 
@@ -31,14 +31,14 @@ export const getRoleById = async(req: Request, res: Response) => {
         const existingRole = await prisma.role.findFirst({where: {id: idNumber}});
         
         if(!existingRole)
-            res.status(404).json({msg: 'Role not found', error: false, data:[]})
+            res.status(404).json({msg: 'Role not found', error: false, data:[]});
         
         res.json({
             msg: 'ok',
             error: false,
             records: 1,
             data: existingRole
-        })
+        });
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -46,7 +46,7 @@ export const getRoleById = async(req: Request, res: Response) => {
             error: error,
             data: []
 
-        })
+        });
     }
 }
 
@@ -57,7 +57,7 @@ export const saveRole = async(req: Request, res: Response) => {
             create: {name, description},
             update: {name, description},
             where: {name}
-            })
+        });
         res.json({
             newRole,
             msg: `Role ${newRole.name} created`
@@ -67,7 +67,7 @@ export const saveRole = async(req: Request, res: Response) => {
         res.status(500).json({
             msg: 'Something went wrong',
             error
-        })
+        });
     }
 }
 
@@ -79,7 +79,7 @@ export const updateRoleById = async(req: Request, res: Response) => {
         if (!id || isNaN(idNumber)) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
         const updatingRole = await prisma.role.findFirst({where: {id: idNumber}});
         if(!updatingRole)
-            res.status(404).json({msg: 'Role not found', error: false, data:[]})
+            res.status(404).json({msg: 'Role not found', error: false, data:[]});
         
         await prisma.role.update({
             where: {
@@ -88,18 +88,18 @@ export const updateRoleById = async(req: Request, res: Response) => {
             data: {
                 name, description
             }
-            });
+        });
         res.status(200).json({
             msg: `Role ${name} updated`,
             error: false,
             records: 1
-        })
+        });
     } catch (error) {
         console.log(error);
         res.status(500).json({
             msg: 'Somenthing went wrong',
             error
-        })
+        });
     }
 }
 
@@ -116,17 +116,17 @@ export const deleteRoleById = async(req: Request, res: Response) => {
             data: {
                 active: 0
             }
-            });
+        });
 
         res.status(200).json({
             msg: `Role ${id} deleted`,
             error: false
-        })
+        });
     } catch (error) {
         console.log(error);
         res.status(500).json({
             msg: 'Somenthing went wrong',
             error
-        })
+        });
     }
 }

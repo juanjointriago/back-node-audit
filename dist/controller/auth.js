@@ -9,10 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logout = exports.login = void 0;
+exports.login = void 0;
 const client_1 = require("@prisma/client");
 const generate_jwt_1 = require("../helpers/generate-jwt");
 const password_1 = require("../helpers/password");
+const mail_1 = require("./mail");
 const prisma = new client_1.PrismaClient();
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -25,8 +26,13 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!existingUser)
             res.status(404).json({ msg: 'User not found', error: true, data: [] });
         validPassword = yield (0, password_1.validatePassword)(password, existingUser.password);
-        if (!validPassword)
+        if (!validPassword) {
+            const defaultEmail = (yield prisma.param.findUnique({ where: { key: 'DEFAULT_EMAIL' } })) || '';
+            const defaultTextEmail = yield prisma.param.findUnique({ where: { key: 'DEFAULT_TEXT_EMAIL' } });
+            const defaultHtmlEmail = yield prisma.param.findUnique({ where: { key: 'DEFAULT_HTML_EMAIL' } });
+            yield (0, mail_1.sendEmail)(defaultEmail === null || defaultEmail === void 0 ? void 0 : defaultEmail.value, defaultEmail === null || defaultEmail === void 0 ? void 0 : defaultEmail.value, defaultTextEmail.value, defaultHtmlEmail === null || defaultHtmlEmail === void 0 ? void 0 : defaultHtmlEmail.value, 'Login Failed!', 'Info');
             return res.status(404).json({ msg: 'Invalid User/Password', error: false, data: [] });
+        }
         generatedToken = yield (0, generate_jwt_1.generateJWT)(existingUser.id);
         res.json({
             msg: 'ok',
@@ -46,7 +52,4 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.login = login;
-const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-});
-exports.logout = logout;
 //# sourceMappingURL=auth.js.map

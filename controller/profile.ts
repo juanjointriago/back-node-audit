@@ -12,13 +12,13 @@ export const getAllProfiles = async(req: Request, res: Response) => {
             error: false,
             records: profiles.length,
             data: profiles
-        })
+        });
     } catch (error) {
         console.log(error);
         res.status(500).json({
             msg: 'Error getting profiles',
             error
-        })
+        });
     }
 }
 
@@ -31,14 +31,14 @@ export const getProfileById = async(req: Request, res: Response) => {
         const existingProfile = await prisma.profile.findFirst({where: {id: idNumber}});
         
         if(!existingProfile)
-            res.status(404).json({msg: 'Profile not found', error: false, data:[]})
+            res.status(404).json({msg: 'Profile not found', error: false, data:[]});
     
         res.json({
             msg: 'ok',
             error: false,
             records: 1,
             data: existingProfile
-        })
+        });
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -46,7 +46,7 @@ export const getProfileById = async(req: Request, res: Response) => {
             error: error,
             data: []
 
-        })
+        });
     }
 }
 
@@ -57,7 +57,7 @@ export const saveProfile = async(req: Request, res: Response) => {
             create: {name, description},
             update: {name, description},
             where: {name}
-            })
+        });
         res.json({
             newProfile,
             msg: `Profile ${newProfile.name} created`
@@ -67,7 +67,7 @@ export const saveProfile = async(req: Request, res: Response) => {
         res.status(500).json({
             msg: 'Something went wrong',
             error
-        })
+        });
     }
 }
 
@@ -79,7 +79,7 @@ export const updateProfileById = async(req: Request, res: Response) => {
         if (!id || isNaN(idNumber)) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
         const updatingProfile = await prisma.profile.findFirst({where: {id: idNumber}});
         if(!updatingProfile)
-            res.status(404).json({msg: 'Profile not found', error: false, data:[]})
+            res.status(404).json({msg: 'Profile not found', error: false, data:[]});
         
         await prisma.profile.update({
             where: {
@@ -88,18 +88,18 @@ export const updateProfileById = async(req: Request, res: Response) => {
             data: {
                 name, description
             }
-            });
+        });
         res.status(200).json({
             msg: `Profile ${name} updated`,
             error: false,
             records: 1
-        })
+        });
     } catch (error) {
         console.log(error);
         res.status(500).json({
             msg: 'Somenthing went wrong',
             error
-        })
+        });
     }
 }
 
@@ -116,17 +116,17 @@ export const deleteProfileById = async(req: Request, res: Response) => {
             data: {
                 active: 0
             }
-            });
+        });
 
         res.status(200).json({
             msg: `Profile ${id} deleted`,
             error: false
-        })
+        });
     } catch (error) {
         console.log(error);
         res.status(500).json({
             msg: 'Somenthing went wrong',
             error
-        })
+        });
     }
 }

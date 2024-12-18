@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
 import { generateJWT } from "../helpers/generate-jwt";
 import { validatePassword } from "../helpers/password";
+import { sendEmail } from "./mail";
 
 const prisma = new PrismaClient();
 export const login = async(req: Request, res: Response) => {
@@ -17,8 +18,14 @@ export const login = async(req: Request, res: Response) => {
         
         validPassword = await validatePassword(password, existingUser.password);
         
-        if(!validPassword)
+        if(!validPassword){
+            const defaultEmail = await prisma.param.findUnique({where: { key: 'DEFAULT_EMAIL' }}) || '';
+            const defaultTextEmail = await prisma.param.findUnique({where: { key: 'DEFAULT_TEXT_EMAIL' }});
+            const defaultHtmlEmail = await prisma.param.findUnique({where: { key: 'DEFAULT_HTML_EMAIL' }});
+            await sendEmail(defaultEmail?.value, defaultEmail?.value, defaultTextEmail.value, defaultHtmlEmail?.value, 'Login Failed!','Info');
             return res.status(404).json({msg: 'Invalid User/Password', error: false, data:[]});
+        }
+            
       
         generatedToken = await generateJWT(existingUser.id);
         res.json({
@@ -27,7 +34,7 @@ export const login = async(req: Request, res: Response) => {
             records: 1,
             data: existingUser,
             token: generatedToken || ''
-        })
+        });
         
     } catch (error) {
         console.log(error);
@@ -36,7 +43,7 @@ export const login = async(req: Request, res: Response) => {
             error: error,
             data: []
 
-        })
+        });
     }
 }
 

@@ -13,14 +13,14 @@ router.post('/',
     [
         check('name', 'Name is required').not().isEmpty(),
         validateFields
-    ]
+    ],
     validateJWT,
     saveRole);
 router.put('/:id', 
     [
         check('name', 'Name is required').not().isEmpty(),
         validateFields
-    }
+    ],
     validateJWT,
     updateRoleById);
 router.delete('/:id', 

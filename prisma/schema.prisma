@@ -50,3 +50,10 @@ model UserRole {
   role        Role      @relation(fields: [roleId], references: [id])
   assignedAt  DateTime  @default(now())
 }
+
+model Param {
+  id          Int       @id @default(autoincrement())
+  key         String    @unique
+  value       String
+  active      Int?      @default(1)
+}

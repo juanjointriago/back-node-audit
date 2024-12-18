@@ -8,6 +8,7 @@ const user_1 = __importDefault(require("../routes/user"));
 const profile_1 = __importDefault(require("../routes/profile"));
 const role_1 = __importDefault(require("../routes/role"));
 const auth_1 = __importDefault(require("../routes/auth"));
+const param_1 = __importDefault(require("../routes/param"));
 const cors_1 = __importDefault(require("cors"));
 class Server {
     constructor() {
@@ -15,7 +16,8 @@ class Server {
             users: '/api/users',
             profiles: '/api/profiles',
             roles: '/api/roles',
-            auth: '/api/auth'
+            auth: '/api/auth',
+            params: '/api/params'
         };
         this.app = (0, express_1.default)();
         this.port = process.env.PORT || '3000';
@@ -32,6 +34,7 @@ class Server {
         this.app.use(this.apiPaths.profiles, profile_1.default);
         this.app.use(this.apiPaths.roles, role_1.default);
         this.app.use(this.apiPaths.auth, auth_1.default);
+        this.app.use(this.apiPaths.params, param_1.default);
     }
     listen() {
         this.app.listen(this.port, () => {
