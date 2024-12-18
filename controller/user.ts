@@ -1,7 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
 import { encryptPassword} from "../helpers/password";
-import { validationResult } from "express-validator";
 
 const prisma = new PrismaClient();
 export const getAllUsers = async(req: Request, res: Response) => {

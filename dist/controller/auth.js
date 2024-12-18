@@ -26,7 +26,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             res.status(404).json({ msg: 'User not found', error: true, data: [] });
         validPassword = yield (0, password_1.validatePassword)(password, existingUser.password);
         if (!validPassword)
-            res.status(404).json({ msg: 'Invalid User/Password', error: false, data: [] });
+            return res.status(404).json({ msg: 'Invalid User/Password', error: false, data: [] });
         generatedToken = yield (0, generate_jwt_1.generateJWT)(existingUser.id);
         res.json({
             msg: 'ok',

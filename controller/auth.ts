@@ -2,7 +2,6 @@ import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
 import { generateJWT } from "../helpers/generate-jwt";
 import { validatePassword } from "../helpers/password";
-import { validationResult } from "express-validator";
 
 const prisma = new PrismaClient();
 export const login = async(req: Request, res: Response) => {
@@ -19,7 +18,7 @@ export const login = async(req: Request, res: Response) => {
         validPassword = await validatePassword(password, existingUser.password);
         
         if(!validPassword)
-            res.status(404).json({msg: 'Invalid User/Password', error: false, data:[]});
+            return res.status(404).json({msg: 'Invalid User/Password', error: false, data:[]});
       
         generatedToken = await generateJWT(existingUser.id);
         res.json({
@@ -41,6 +40,3 @@ export const login = async(req: Request, res: Response) => {
     }
 }
 
-export const logout = async(req: Request, res: Response) => {
-    
-}
