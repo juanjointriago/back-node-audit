@@ -24,25 +24,37 @@ async function getAccessToken() {
 }
 
 export const transporter = async () => {
-    const accessToken = await getAccessToken();
+    //const accessToken = await getAccessToken();
     return nodemailer.createTransport({
-        // service: 'gmail',
-        // auth: {
-        // type: 'OAuth2',
-        // user: process.env.EMAIL,
-        // pass: process.env.MAIL_PASSWORD,
-        // clientId: process.env.CLIENT_ID,
-        // clientSecret: process.env.CLIENT_SECRET,
-        // refreshToken: process.env.REFRESH_TOKEN,
-        // //accessToken: getAccessToken(),
-        // }
+        /* OAuth2 
+            service: 'gmail',
+            auth: {
+            type: 'OAuth2',
+            user: process.env.EMAIL,
+            clientId: process.env.CLIENT_ID,
+            clientSecret: process.env.CLIENT_SECRET,
+            refreshToken: process.env.REFRESH_TOKEN,
+            accessToken: accessToken,
+        }
+        /* */
+        /* GMAIL */
         service: "Gmail",
         host: "smtp.gmail.com",
         port: 465,
-        secure: true,
+        secure: false,
         auth: {
             user: process.env.EMAIL,
-            pass: process.env.MAIL_PASSWORD,
+            pass: process.env.PASSWORD,
         },
+        /* */
+        /* outlook 
+        host: "smtp-mail.outlook.com",
+        port: 587,
+        secure: false, 
+        auth: {
+            user: process.env.EMAIL2, // tu dirección de correo de Outlook
+            pass: process.env.MAIL_PASSWORD2 // la contraseña generada
+        }
+        /* */
     });
 };

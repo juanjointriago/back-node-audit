@@ -27,10 +27,10 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             res.status(404).json({ msg: 'User not found', error: true, data: [] });
         validPassword = yield (0, password_1.validatePassword)(password, existingUser.password);
         if (!validPassword) {
-            const defaultEmail = (yield prisma.param.findUnique({ where: { key: 'DEFAULT_EMAIL' } })) || '';
+            const defaultEmails = (yield prisma.param.findUnique({ where: { key: 'DEFAULT_EMAILS' } })) || '';
             const defaultTextEmail = yield prisma.param.findUnique({ where: { key: 'DEFAULT_TEXT_EMAIL' } });
             const defaultHtmlEmail = yield prisma.param.findUnique({ where: { key: 'DEFAULT_HTML_EMAIL' } });
-            yield (0, mail_1.sendEmail)(defaultEmail === null || defaultEmail === void 0 ? void 0 : defaultEmail.value, defaultEmail === null || defaultEmail === void 0 ? void 0 : defaultEmail.value, defaultTextEmail.value, defaultHtmlEmail === null || defaultHtmlEmail === void 0 ? void 0 : defaultHtmlEmail.value, 'Login Failed!', 'Info');
+            yield (0, mail_1.sendEmail)(process.env.EMAIL || '', defaultEmails === null || defaultEmails === void 0 ? void 0 : defaultEmails.value, defaultTextEmail.value, defaultHtmlEmail === null || defaultHtmlEmail === void 0 ? void 0 : defaultHtmlEmail.value, 'Login Failed!', 'Info');
             return res.status(404).json({ msg: 'Invalid User/Password', error: false, data: [] });
         }
         generatedToken = yield (0, generate_jwt_1.generateJWT)(existingUser.id);
