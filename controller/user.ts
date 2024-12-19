@@ -63,6 +63,37 @@ export const getUserById = async(req: Request, res: Response) => {
     }
 }
 
+export const getUserByUsername = async(req: Request, res: Response) => {
+    try {
+        const {username} = req.body;
+        if (!username) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
+        
+        const existingUser = await prisma.user.findFirst({
+            where: {username},
+            include: { roles: true }});
+        
+        if(!existingUser)
+            res.status(404).json({msg: 'User not found', error: false, data:[]});
+        else{
+            res.json({
+                msg: 'ok',
+                error: false,
+                records: 1,
+                data: existingUser
+            });
+        }
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Error getting user',
+            error: error,
+            data: []
+
+        });
+    }
+}
+
 export const saveUser = async(req: Request, res: Response) => {
     try {
         const {username, password, email, profileId, roleId} = req.body; 

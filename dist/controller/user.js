@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUserById = exports.updateUserById = exports.saveUser = exports.getUserById = exports.getAllUsers = void 0;
+exports.deleteUserById = exports.updateUserById = exports.saveUser = exports.getUserByUsername = exports.getUserById = exports.getAllUsers = void 0;
 const client_1 = require("@prisma/client");
 const password_1 = require("../helpers/password");
 const prisma = new client_1.PrismaClient();
@@ -72,6 +72,36 @@ const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.getUserById = getUserById;
+const getUserByUsername = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { username } = req.body;
+        if (!username)
+            res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
+        const existingUser = yield prisma.user.findFirst({
+            where: { username },
+            include: { roles: true }
+        });
+        if (!existingUser)
+            res.status(404).json({ msg: 'User not found', error: false, data: [] });
+        else {
+            res.json({
+                msg: 'ok',
+                error: false,
+                records: 1,
+                data: existingUser
+            });
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Error getting user',
+            error: error,
+            data: []
+        });
+    }
+});
+exports.getUserByUsername = getUserByUsername;
 const saveUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { username, password, email, profileId, roleId } = req.body;

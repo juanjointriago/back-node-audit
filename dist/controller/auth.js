@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.login = void 0;
+exports.resetPassword = exports.login = void 0;
 const client_1 = require("@prisma/client");
 const generate_jwt_1 = require("../helpers/generate-jwt");
 const password_1 = require("../helpers/password");
@@ -30,7 +30,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             const defaultEmails = (yield prisma.param.findUnique({ where: { key: 'DEFAULT_EMAILS' } })) || '';
             const defaultTextEmail = yield prisma.param.findUnique({ where: { key: 'DEFAULT_TEXT_EMAIL' } });
             const defaultHtmlEmail = yield prisma.param.findUnique({ where: { key: 'DEFAULT_HTML_EMAIL' } });
-            yield (0, mail_1.sendEmail)(process.env.EMAIL || '', defaultEmails === null || defaultEmails === void 0 ? void 0 : defaultEmails.value, defaultTextEmail.value, defaultHtmlEmail === null || defaultHtmlEmail === void 0 ? void 0 : defaultHtmlEmail.value, 'Login Failed!', 'Info');
+            (0, mail_1.sendEmail)(process.env.EMAIL || '', defaultEmails === null || defaultEmails === void 0 ? void 0 : defaultEmails.value, defaultTextEmail.value, defaultHtmlEmail === null || defaultHtmlEmail === void 0 ? void 0 : defaultHtmlEmail.value, 'Login Failed!', 'Info');
             return res.status(404).json({ msg: 'Invalid User/Password', error: false, data: [] });
         }
         generatedToken = yield (0, generate_jwt_1.generateJWT)(existingUser.id);
@@ -52,4 +52,34 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.login = login;
+const resetPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id, password, confirmPassword } = req.body;
+        if (!(id || password || confirmPassword))
+            res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
+        const existingUser = yield prisma.user.findFirst({ where: { id, active: 1 } });
+        if (!existingUser)
+            res.status(404).json({ msg: 'User not found', error: true, data: [] });
+        const encryptedPassword = yield (0, password_1.encryptPassword)(password);
+        const updatedUser = yield prisma.user.update({
+            where: { id },
+            data: {
+                password: encryptedPassword
+            }
+        });
+        res.json({
+            msg: `Username: ${updatedUser.username} -> Password changed successfully`,
+            error: false
+        });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Error getting user',
+            error: error,
+            data: []
+        });
+    }
+});
+exports.resetPassword = resetPassword;
 //# sourceMappingURL=auth.js.map
