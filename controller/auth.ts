@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { generateJWT } from "../helpers/generate-jwt";
 import { encryptPassword, validatePassword } from "../helpers/password";
 import { sendEmail } from "./mail";
+import {saveLog} from "./log";
 
 const prisma = new PrismaClient();
 export const login = async(req: Request, res: Response) => {
@@ -22,8 +23,10 @@ export const login = async(req: Request, res: Response) => {
             const defaultEmails = await prisma.param.findUnique({where: { key: 'DEFAULT_EMAILS' }}) || '';
             const defaultTextEmail = await prisma.param.findUnique({where: { key: 'DEFAULT_TEXT_EMAIL' }});
             const defaultHtmlEmail = await prisma.param.findUnique({where: { key: 'DEFAULT_HTML_EMAIL' }});
-            sendEmail(process.env.EMAIL || '', defaultEmails?.value, defaultTextEmail.value, defaultHtmlEmail?.value, 'Login Failed!','Info');
-            return res.status(404).json({msg: 'Invalid User/Password', error: false, data:[]});
+            const body = JSON.stringify(req.body);
+            const log = await saveLog('User', 'Audit', req.originalUrl, `Login attempt for username: ${username}`, body, username, req.ip || '', 'Web', process.env.VERSION || '');
+            //sendEmail(process.env.EMAIL || '', defaultEmails?.value, defaultTextEmail.value, defaultHtmlEmail?.value, 'Login Failed!','Info');
+            return res.status(404).json({msg: 'Invalid User/Password', error: false, data:log});
         }
             
       

@@ -19,7 +19,6 @@ router.post('/forgotPassword',
     ],
     getUserByUsername
 );
-
 router.post('/resetPassword',
     [
         check('id', 'Id es required').not().isEmpty(),

@@ -13,7 +13,7 @@ exports.resetPassword = exports.login = void 0;
 const client_1 = require("@prisma/client");
 const generate_jwt_1 = require("../helpers/generate-jwt");
 const password_1 = require("../helpers/password");
-const mail_1 = require("./mail");
+const log_1 = require("./log");
 const prisma = new client_1.PrismaClient();
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -30,8 +30,10 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             const defaultEmails = (yield prisma.param.findUnique({ where: { key: 'DEFAULT_EMAILS' } })) || '';
             const defaultTextEmail = yield prisma.param.findUnique({ where: { key: 'DEFAULT_TEXT_EMAIL' } });
             const defaultHtmlEmail = yield prisma.param.findUnique({ where: { key: 'DEFAULT_HTML_EMAIL' } });
-            (0, mail_1.sendEmail)(process.env.EMAIL || '', defaultEmails === null || defaultEmails === void 0 ? void 0 : defaultEmails.value, defaultTextEmail.value, defaultHtmlEmail === null || defaultHtmlEmail === void 0 ? void 0 : defaultHtmlEmail.value, 'Login Failed!', 'Info');
-            return res.status(404).json({ msg: 'Invalid User/Password', error: false, data: [] });
+            const body = JSON.stringify(req.body);
+            const log = yield (0, log_1.saveLog)('User', 'Audit', req.originalUrl, `Login attempt for username: ${username}`, body, username, req.ip || '', 'Web', process.env.VERSION || '');
+            //sendEmail(process.env.EMAIL || '', defaultEmails?.value, defaultTextEmail.value, defaultHtmlEmail?.value, 'Login Failed!','Info');
+            return res.status(404).json({ msg: 'Invalid User/Password', error: false, data: log });
         }
         generatedToken = yield (0, generate_jwt_1.generateJWT)(existingUser.id);
         res.json({

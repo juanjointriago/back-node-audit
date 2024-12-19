@@ -21,7 +21,7 @@ export const sendEmail = async (
         });
         console.debug({
             error: false,
-            msg: "Email enviado con exito Success",
+            msg: "Email sent successfully",
             data: result,
         });
     }catch (error) {
