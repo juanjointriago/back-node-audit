@@ -14,10 +14,37 @@ const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const getLogs = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const page = parseInt(req.query.page) || 1;
-        const pageSize = parseInt(req.query.pageSize) || 10;
+        const page = parseInt(req.query.page) | 1;
+        const pageSize = parseInt(req.query.pageSize) | 100;
         const skip = (page - 1) * pageSize;
+        //Filters(optional)
+        const entity = req.query.entity;
+        const type = req.query.type;
+        const action = req.query.action;
+        const user = req.query.user;
+        const program = req.query.program;
+        const dateStart = req.query.dateStart;
+        const dateEnd = req.query.dateEnd;
+        const where = {};
+        if (entity)
+            where.entity = entity;
+        if (type)
+            where.type = type;
+        if (action)
+            where.action = action;
+        if (user)
+            where.user = user;
+        if (program)
+            where.program = program;
+        if (dateStart || dateEnd) {
+            where.createdAt = {};
+            if (dateStart)
+                where.createdAt.gte = new Date(dateStart);
+            if (dateEnd)
+                where.createdAt.lte = new Date(dateEnd);
+        }
         const logs = yield prisma.log.findMany({
+            where,
             skip,
             take: pageSize
         });

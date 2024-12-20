@@ -1,12 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
-import { encryptPassword} from "../helpers/password";
+import { encryptPassword, validatePassword} from "../helpers/password";
+import { saveLog } from "./log";
 
 const prisma = new PrismaClient();
 export const getAllUsers = async(req: Request, res: Response) => {
     try {
-        const page = parseInt(req.query.page as string) || 1;
-        const pageSize = parseInt(req.query.pageSize as string) || 10;
+        const page = parseInt(req.query.page as string) | 1;
+        const pageSize = parseInt(req.query.pageSize as string) | 10;
         const skip = (page - 1) * pageSize;
 
         const users = await prisma.user.findMany({
@@ -72,9 +73,12 @@ export const getUserByUsername = async(req: Request, res: Response) => {
             where: {username},
             include: { roles: true }});
         
-        if(!existingUser)
+        if(!existingUser){
+            if(req.originalUrl.includes('forgotPassword')) await saveLog('LOGIN', 'AUDIT', req.originalUrl, `Forgot Password`, `User not found: ${username}`, '', req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
             res.status(404).json({msg: 'User not found', error: false, data:[]});
+        }
         else{
+            if(req.originalUrl.includes('forgotPassword')) await saveLog('LOGIN', 'AUDIT', req.originalUrl, `Forgot Password`, 'Getting user successfully', username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'INFO');
             res.json({
                 msg: 'ok',
                 error: false,
@@ -105,6 +109,12 @@ export const saveUser = async(req: Request, res: Response) => {
         });
         if (existingUser) {
             const existingRole = existingUser.roles.find((role: { roleId: number }) => role.roleId === roleId);
+            /* Confirmar la necesidad de esta validacion
+            const matchPasswords = await validatePassword(password, existingUser.password);
+            if(matchPasswords){
+                return res.status(400).json({ msg: 'New password cannot be the same as old one', error: true, data: [] });
+            } /* */
+
             if (existingRole) {
                 const updatedUser = await prisma.user.update({
                     where: { username },
@@ -191,7 +201,13 @@ export const updateUserById = async(req: Request, res: Response) => {
         
         if(!existingUser)
             res.status(404).json({msg: 'User not found', error: false, data:[]});
-        
+
+        /* Confirmar la necesidad de esta validacion
+        const matchPasswords = await validatePassword(password, existingUser.password);
+        if(matchPasswords){
+            return res.status(400).json({ msg: 'New password cannot be the same as old one', error: true, data: [] });
+        } /* */
+
         const existingRole = existingUser.roles.find((role: { roleId: number }) => role.roleId === roleId);
         if (existingRole) {
             const updatedUser = await prisma.user.update({

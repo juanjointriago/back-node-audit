@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import { generateJWT } from "../helpers/generate-jwt";
 import { encryptPassword, validatePassword } from "../helpers/password";
 import { sendEmail } from "./mail";
-import {saveLog} from "./log";
+import { saveLog } from "./log";
 
 const prisma = new PrismaClient();
 export const login = async(req: Request, res: Response) => {
@@ -15,22 +15,26 @@ export const login = async(req: Request, res: Response) => {
         
         const existingUser = await prisma.user.findFirst({where: {username: username, active: 1}});
         
-        if (!existingUser) res.status(404).json({ msg: 'User not found', error: true, data: [] });
+        if (!existingUser){
+            await saveLog('LOGIN', 'AUDIT', req.originalUrl, `Login attempt failed`, 'User not found', username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
+            res.status(404).json({ msg: 'User not found', error: true, data: [] });
+        }
         
         validPassword = await validatePassword(password, existingUser.password);
-        
         if(!validPassword){
             const defaultEmails = await prisma.param.findUnique({where: { key: 'DEFAULT_EMAILS' }}) || '';
             const defaultTextEmail = await prisma.param.findUnique({where: { key: 'DEFAULT_TEXT_EMAIL' }});
             const defaultHtmlEmail = await prisma.param.findUnique({where: { key: 'DEFAULT_HTML_EMAIL' }});
-            const body = JSON.stringify(req.body);
-            const log = await saveLog('User', 'Audit', req.originalUrl, `Login attempt for username: ${username}`, body, username, req.ip || '', 'Web', process.env.VERSION || '');
-            //sendEmail(process.env.EMAIL || '', defaultEmails?.value, defaultTextEmail.value, defaultHtmlEmail?.value, 'Login Failed!','Info');
-            return res.status(404).json({msg: 'Invalid User/Password', error: false, data:log});
+            await saveLog('LOGIN', 'AUDIT', req.originalUrl, `Login attempt failed`, /*JSON.stringify(req.body)*/ 'Invalid Password', username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
+            if(!defaultEmails)
+                sendEmail(process.env.EMAIL || '', defaultEmails?.value, defaultTextEmail.value, defaultHtmlEmail?.value, 'Login Failed!','Info');
+            
+            return res.status(404).json({msg: 'Invalid Password', error: false, data:log});
         }
             
-      
+        
         generatedToken = await generateJWT(existingUser.id);
+        await saveLog('LOGIN', 'AUDIT', req.originalUrl, `Login success`, JSON.stringify({token: generatedToken}), username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'INFO');
         res.json({
             msg: 'ok',
             error: false,
@@ -42,7 +46,7 @@ export const login = async(req: Request, res: Response) => {
     } catch (error) {
         console.log(error);
         res.status(500).json({
-            msg: 'Error getting user',
+            msg: 'Somenthing went wrong',
             error: error,
             data: []
 
@@ -57,7 +61,16 @@ export const resetPassword = async(req: Request, res: Response) => {
 
         const existingUser = await prisma.user.findFirst({where: {id, active: 1}});
 
-        if (!existingUser) res.status(404).json({ msg: 'User not found', error: true, data: [] });
+        if (!existingUser){
+            await saveLog('LOGIN', 'AUDIT', req.originalUrl, `Reset password failed`, `User not found: ${id}`, '', req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
+            return res.status(404).json({ msg: 'User not found', error: true, data: [] });   
+        }
+
+        const matchPasswords = await validatePassword(password, existingUser.password);
+        if(matchPasswords){
+            await saveLog('LOGIN', 'AUDIT', req.originalUrl, `Reset password failed`, `New password cannot be the same as the old one`, existingUser.username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
+            return res.status(400).json({ msg: 'New password cannot be the same as the old one', error: true, data: [] });
+        }
 
         const encryptedPassword = await encryptPassword(password);
 
@@ -67,6 +80,8 @@ export const resetPassword = async(req: Request, res: Response) => {
                 password: encryptedPassword
             }
         });
+        
+        await saveLog('LOGIN', 'AUDIT', req.originalUrl, `Reset password success`, JSON.stringify({password: encryptedPassword}), updatedUser.username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'INFO');
 
         res.json({
             msg: `Username: ${updatedUser.username} -> Password changed successfully`,
@@ -75,7 +90,7 @@ export const resetPassword = async(req: Request, res: Response) => {
     } catch (error) {
         console.log(error);
         res.status(500).json({
-            msg: 'Error getting user',
+            msg: 'Somenthing went wrong',
             error: error,
             data: []
 
