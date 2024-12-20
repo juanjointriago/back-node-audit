@@ -16,7 +16,7 @@ export const login = async(req: Request, res: Response) => {
         const existingUser = await prisma.user.findFirst({where: {username: username, active: 1}});
         
         if (!existingUser){
-            await saveLog('LOGIN', 'AUDIT', req.originalUrl, `Login attempt failed`, 'User not found', username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
+            await saveLog('BD', 'AUDIT', req.originalUrl, `Login attempt failed`, 'User not found', username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
             res.status(404).json({ msg: 'User not found', error: true, data: [] });
         }
         
@@ -25,7 +25,7 @@ export const login = async(req: Request, res: Response) => {
             const defaultEmails = await prisma.param.findUnique({where: { key: 'DEFAULT_EMAILS' }}) || '';
             const defaultTextEmail = await prisma.param.findUnique({where: { key: 'DEFAULT_TEXT_EMAIL' }});
             const defaultHtmlEmail = await prisma.param.findUnique({where: { key: 'DEFAULT_HTML_EMAIL' }});
-            await saveLog('LOGIN', 'AUDIT', req.originalUrl, `Login attempt failed`, /*JSON.stringify(req.body)*/ 'Invalid Password', username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
+            await saveLog('BD', 'AUDIT', req.originalUrl, `Login attempt failed`, /*JSON.stringify(req.body)*/ 'Invalid Password', username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
             if(!defaultEmails)
                 sendEmail(process.env.EMAIL || '', defaultEmails?.value, defaultTextEmail.value, defaultHtmlEmail?.value, 'Login Failed!','Info');
             
@@ -34,7 +34,7 @@ export const login = async(req: Request, res: Response) => {
             
         
         generatedToken = await generateJWT(existingUser.id);
-        await saveLog('LOGIN', 'AUDIT', req.originalUrl, `Login success`, JSON.stringify({token: generatedToken}), username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'INFO');
+        await saveLog('BD', 'AUDIT', req.originalUrl, `Login success`, JSON.stringify({token: generatedToken}), username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'INFO');
         res.json({
             msg: 'ok',
             error: false,
@@ -62,13 +62,13 @@ export const resetPassword = async(req: Request, res: Response) => {
         const existingUser = await prisma.user.findFirst({where: {id, active: 1}});
 
         if (!existingUser){
-            await saveLog('LOGIN', 'AUDIT', req.originalUrl, `Reset password failed`, `User not found: ${id}`, '', req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
+            await saveLog('BD', 'AUDIT', req.originalUrl, `Reset password failed`, `User not found: ${id}`, '', req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
             return res.status(404).json({ msg: 'User not found', error: true, data: [] });   
         }
 
         const matchPasswords = await validatePassword(password, existingUser.password);
         if(matchPasswords){
-            await saveLog('LOGIN', 'AUDIT', req.originalUrl, `Reset password failed`, `New password cannot be the same as the old one`, existingUser.username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
+            await saveLog('BD', 'AUDIT', req.originalUrl, `Reset password failed`, `New password cannot be the same as the old one`, existingUser.username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
             return res.status(400).json({ msg: 'New password cannot be the same as the old one', error: true, data: [] });
         }
 
@@ -81,7 +81,7 @@ export const resetPassword = async(req: Request, res: Response) => {
             }
         });
         
-        await saveLog('LOGIN', 'AUDIT', req.originalUrl, `Reset password success`, JSON.stringify({password: encryptedPassword}), updatedUser.username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'INFO');
+        await saveLog('BD', 'AUDIT', req.originalUrl, `Reset password success`, JSON.stringify({password: encryptedPassword}), updatedUser.username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'INFO');
 
         res.json({
             msg: `Username: ${updatedUser.username} -> Password changed successfully`,

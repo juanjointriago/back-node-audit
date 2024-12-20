@@ -74,11 +74,11 @@ export const getUserByUsername = async(req: Request, res: Response) => {
             include: { roles: true }});
         
         if(!existingUser){
-            if(req.originalUrl.includes('forgotPassword')) await saveLog('LOGIN', 'AUDIT', req.originalUrl, `Forgot Password`, `User not found: ${username}`, '', req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
+            if(req.originalUrl.includes('forgotPassword')) await saveLog('BD', 'AUDIT', req.originalUrl, `Forgot Password`, `User not found: ${username}`, '', req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
             res.status(404).json({msg: 'User not found', error: false, data:[]});
         }
         else{
-            if(req.originalUrl.includes('forgotPassword')) await saveLog('LOGIN', 'AUDIT', req.originalUrl, `Forgot Password`, 'Getting user successfully', username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'INFO');
+            if(req.originalUrl.includes('forgotPassword')) await saveLog('BD', 'AUDIT', req.originalUrl, `Forgot Password`, 'Getting user successfully', username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'INFO');
             res.json({
                 msg: 'ok',
                 error: false,

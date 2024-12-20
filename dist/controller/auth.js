@@ -25,7 +25,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
         const existingUser = yield prisma.user.findFirst({ where: { username: username, active: 1 } });
         if (!existingUser) {
-            yield (0, log_1.saveLog)('LOGIN', 'AUDIT', req.originalUrl, `Login attempt failed`, 'User not found', username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
+            yield (0, log_1.saveLog)('BD', 'AUDIT', req.originalUrl, `Login attempt failed`, 'User not found', username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
             res.status(404).json({ msg: 'User not found', error: true, data: [] });
         }
         validPassword = yield (0, password_1.validatePassword)(password, existingUser.password);
@@ -33,13 +33,13 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             const defaultEmails = (yield prisma.param.findUnique({ where: { key: 'DEFAULT_EMAILS' } })) || '';
             const defaultTextEmail = yield prisma.param.findUnique({ where: { key: 'DEFAULT_TEXT_EMAIL' } });
             const defaultHtmlEmail = yield prisma.param.findUnique({ where: { key: 'DEFAULT_HTML_EMAIL' } });
-            yield (0, log_1.saveLog)('LOGIN', 'AUDIT', req.originalUrl, `Login attempt failed`, /*JSON.stringify(req.body)*/ 'Invalid Password', username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
+            yield (0, log_1.saveLog)('BD', 'AUDIT', req.originalUrl, `Login attempt failed`, /*JSON.stringify(req.body)*/ 'Invalid Password', username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
             if (!defaultEmails)
                 (0, mail_1.sendEmail)(process.env.EMAIL || '', defaultEmails === null || defaultEmails === void 0 ? void 0 : defaultEmails.value, defaultTextEmail.value, defaultHtmlEmail === null || defaultHtmlEmail === void 0 ? void 0 : defaultHtmlEmail.value, 'Login Failed!', 'Info');
             return res.status(404).json({ msg: 'Invalid Password', error: false, data: log });
         }
         generatedToken = yield (0, generate_jwt_1.generateJWT)(existingUser.id);
-        yield (0, log_1.saveLog)('LOGIN', 'AUDIT', req.originalUrl, `Login success`, JSON.stringify({ token: generatedToken }), username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'INFO');
+        yield (0, log_1.saveLog)('BD', 'AUDIT', req.originalUrl, `Login success`, JSON.stringify({ token: generatedToken }), username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'INFO');
         res.json({
             msg: 'ok',
             error: false,
@@ -65,12 +65,12 @@ const resetPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
         const existingUser = yield prisma.user.findFirst({ where: { id, active: 1 } });
         if (!existingUser) {
-            yield (0, log_1.saveLog)('LOGIN', 'AUDIT', req.originalUrl, `Reset password failed`, `User not found: ${id}`, '', req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
+            yield (0, log_1.saveLog)('BD', 'AUDIT', req.originalUrl, `Reset password failed`, `User not found: ${id}`, '', req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
             return res.status(404).json({ msg: 'User not found', error: true, data: [] });
         }
         const matchPasswords = yield (0, password_1.validatePassword)(password, existingUser.password);
         if (matchPasswords) {
-            yield (0, log_1.saveLog)('LOGIN', 'AUDIT', req.originalUrl, `Reset password failed`, `New password cannot be the same as the old one`, existingUser.username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
+            yield (0, log_1.saveLog)('BD', 'AUDIT', req.originalUrl, `Reset password failed`, `New password cannot be the same as the old one`, existingUser.username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
             return res.status(400).json({ msg: 'New password cannot be the same as the old one', error: true, data: [] });
         }
         const encryptedPassword = yield (0, password_1.encryptPassword)(password);
@@ -80,7 +80,7 @@ const resetPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 password: encryptedPassword
             }
         });
-        yield (0, log_1.saveLog)('LOGIN', 'AUDIT', req.originalUrl, `Reset password success`, JSON.stringify({ password: encryptedPassword }), updatedUser.username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'INFO');
+        yield (0, log_1.saveLog)('BD', 'AUDIT', req.originalUrl, `Reset password success`, JSON.stringify({ password: encryptedPassword }), updatedUser.username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'INFO');
         res.json({
             msg: `Username: ${updatedUser.username} -> Password changed successfully`,
             error: false
