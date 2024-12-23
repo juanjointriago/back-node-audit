@@ -26,7 +26,11 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const existingUser = yield prisma.user.findFirst({ where: { username: username, active: 1 } });
         if (!existingUser) {
             yield (0, log_1.saveLog)('BD', 'AUDIT', req.originalUrl, `Login attempt failed`, 'User not found', username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
-            res.status(404).json({ msg: 'User not found', error: true, data: [] });
+            return res.status(404).json({
+                msg: 'User not found',
+                error: true,
+                data: []
+            });
         }
         validPassword = yield (0, password_1.validatePassword)(password, existingUser.password);
         if (!validPassword) {
@@ -40,7 +44,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         generatedToken = yield (0, generate_jwt_1.generateJWT)(existingUser.id);
         yield (0, log_1.saveLog)('BD', 'AUDIT', req.originalUrl, `Login success`, JSON.stringify({ token: generatedToken }), username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'INFO');
-        res.json({
+        return res.json({
             msg: 'ok',
             error: false,
             records: 1,

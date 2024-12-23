@@ -17,7 +17,11 @@ export const login = async(req: Request, res: Response) => {
         
         if (!existingUser){
             await saveLog('BD', 'AUDIT', req.originalUrl, `Login attempt failed`, 'User not found', username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
-            res.status(404).json({ msg: 'User not found', error: true, data: [] });
+            return res.status(404).json({ 
+                msg: 'User not found', 
+                error: true, 
+                data: [] 
+            });
         }
         
         validPassword = await validatePassword(password, existingUser.password);
@@ -35,7 +39,7 @@ export const login = async(req: Request, res: Response) => {
         
         generatedToken = await generateJWT(existingUser.id);
         await saveLog('BD', 'AUDIT', req.originalUrl, `Login success`, JSON.stringify({token: generatedToken}), username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'INFO');
-        res.json({
+        return res.json({
             msg: 'ok',
             error: false,
             records: 1,
