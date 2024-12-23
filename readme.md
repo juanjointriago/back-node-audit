@@ -43,3 +43,17 @@ touch src/server.ts
 ## for create tables with prisma: npx prisma generate 
 ## then: npx prisma migrate dev --name init
 ## for execute typescript compilator in watch mode: open a new terminal in folder project and paste command: tsc --watch 
+
+## for create users:
+##{
+##    "username" : "donboty",
+##    "password" : "pinguilo",
+##    "email" : "donboty2@gmail.com",
+##    "profileId" : 1
+##}
+
+## for login(existing user in online database):
+##{
+##    "username": "pinguilo",
+##    "password": "1234" 
+##}
