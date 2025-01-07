@@ -38,3 +38,19 @@ export const inactiveTrigger = async(req: Request, res: Response) => {
         });
     }
 }
+
+export const getEntities = async(req: Request, res: Response) => {
+    try {
+        const response = await prisma.$queryRaw`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' and table_name not like '%migrations%' and table_name not like 'Log';`;
+        res.json({
+            msg: 'ok',
+            error: false,
+            data: response
+        })
+    } catch (error) {
+        res.status(500).json({
+            msg: 'Error getting entitys',
+            error
+        });
+    }
+}
