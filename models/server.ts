@@ -5,6 +5,7 @@ import rolesRoutes from '../routes/role';
 import authRoutes from '../routes/auth';
 import paramsRoutes from '../routes/param';
 import logsRoutes from '../routes/log';
+import auditRoutes from '../routes/audit';
 import cors from 'cors';
 
 class Server{
@@ -17,7 +18,8 @@ class Server{
         roles: '/api/roles',
         auth: '/api/auth',
         params: '/api/params',
-        logs: '/api/logs'
+        logs: '/api/logs',
+        audit: '/api/audit'
     }
 
     constructor(){
@@ -46,6 +48,7 @@ class Server{
         this.app.use(this.apiPaths.auth, authRoutes);
         this.app.use(this.apiPaths.params, paramsRoutes);
         this.app.use(this.apiPaths.logs, logsRoutes);
+        this.app.use(this.apiPaths.audit, auditRoutes);
     }
 
     listen(){
