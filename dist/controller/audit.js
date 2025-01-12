@@ -51,7 +51,19 @@ const inactiveTrigger = (req, res) => __awaiter(void 0, void 0, void 0, function
 exports.inactiveTrigger = inactiveTrigger;
 const getEntities = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const response = yield prisma.$queryRaw `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' and table_name not like '%migrations%' and table_name not like 'Log';`;
+        const response = yield prisma.$queryRaw `
+        SELECT
+                t.table_name,
+            MAX(CASE WHEN pt.tgname IS NOT NULL THEN 1 ELSE 0 END) AS has_audited
+        FROM information_schema.tables t
+        LEFT JOIN pg_trigger pt
+        ON pt.tgrelid = (quote_ident(t.table_name))::regclass and NOT pt.tgisinternal
+        WHERE
+            t.table_schema = 'public'
+            and t.table_type = 'BASE TABLE'
+            and t.table_name not like '%migrations%' and t.table_name not like 'Log'
+        GROUP BY t.table_name;
+        `;
         res.json({
             msg: 'ok',
             error: false,
