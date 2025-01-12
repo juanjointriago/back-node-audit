@@ -3,6 +3,7 @@ import { login, resetPassword } from "../controller/auth";
 import { getUserByUsername } from "../controller/user";
 import { check} from "express-validator";
 import { validateFields } from "../middlewares/validate-fields";
+import { validateAuthStatus } from "../middlewares/validate-jwt";
 const router = Router();
 
 router.post('/login', 
@@ -19,6 +20,10 @@ router.post('/forgotPassword',
     ],
     getUserByUsername
 );
+
+router.get('/checkAuthStatus',
+    validateAuthStatus,
+)
 router.post('/resetPassword',
     [
         check('id', 'Id es required').not().isEmpty(),
