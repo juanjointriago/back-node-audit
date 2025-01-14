@@ -7,24 +7,24 @@ const router = Router();
 
 router.get('/', getAllRoles);
 router.get('/:id',
-    // validateJWT,
+    validateJWT,
     getRoleById);
 router.post('/', 
     [
         check('name', 'Name is required').not().isEmpty(),
         validateFields
     ],
-    // validateJWT,
+    validateJWT,
     saveRole);
 router.put('/:id', 
     [
         check('name', 'Name is required').not().isEmpty(),
         validateFields
     ],
-    // validateJWT,
+    validateJWT,
     updateRoleById);
 router.delete('/:id', 
-    // validateJWT,
+    validateJWT,
     deleteRoleById);
 
 export default router;

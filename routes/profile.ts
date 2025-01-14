@@ -8,24 +8,24 @@ const router = Router();
 
 router.get('/', getAllProfiles);
 router.get('/:id', 
-    // validateJWT,
+    validateJWT,
     getProfileById);
 router.post('/', 
     [
         check('name', 'Name is required').not().isEmpty(),
         validateFields
     ],
-    // validateJWT,
+    validateJWT,
     saveProfile);
 router.put('/:id', 
     [
         check('name', 'Name is required').not().isEmpty(),
-        // validateFields
+        validateFields
     ],
-    // validateJWT,
+    validateJWT,
     updateProfileById);
 router.delete('/:id', 
-    // validateJWT,
+    validateJWT,
     deleteProfileById);
 
 export default router;
