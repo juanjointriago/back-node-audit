@@ -16,10 +16,9 @@ router.post('/',
         check('email', 'Email is required').not().isEmpty(),
         check('email', 'Invalid email').isEmail(),
         check('profileId', 'Profile id is required').not().isEmpty(),
-        check('roleId', 'Role id is required').not().isEmpty(),
         validateFields
     ],
-    validateJWT,
+    // validateJWT,
     saveUser);
 router.put('/:id', 
     [
@@ -28,10 +27,9 @@ router.put('/:id',
         check('email', 'Email is required').not().isEmpty(),
         check('email', 'Invalid email').isEmail(),
         check('profileId', 'Profile id is required').not().isEmpty(),
-        check('roleId', 'Role id is required').not().isEmpty(),
         validateFields
     ],
-    validateJWT,
+    // validateJWT,
     updateUserById);
 router.delete('/:id', 
     validateJWT,

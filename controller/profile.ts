@@ -1,12 +1,12 @@
 import { PrismaClient } from "@prisma/client";
-import { Request, Response } from "express"
+import e, { Request, Response } from "express"
 import { validationResult } from "express-validator";
 
 const prisma = new PrismaClient();
 
 export const getAllProfiles = async(req: Request, res: Response) => {
     try {
-        const profiles = await prisma.profile.findMany({where: {active : 1}});
+        const profiles = await prisma.profile.findMany({where: {active : 1}, include: { roles: true }});
         res.json({
             msg: 'ok',
             error: false,
@@ -28,7 +28,7 @@ export const getProfileById = async(req: Request, res: Response) => {
         const idNumber = parseInt(id, 10);
         if (!id || isNaN(idNumber)) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
         
-        const existingProfile = await prisma.profile.findFirst({where: {id: idNumber}});
+        const existingProfile = await prisma.profile.findFirst({where: {id: idNumber}, include: { roles: true }});
         
         if(!existingProfile)
             res.status(404).json({msg: 'Profile not found', error: false, data:[]});
@@ -52,16 +52,71 @@ export const getProfileById = async(req: Request, res: Response) => {
 
 export const saveProfile = async(req: Request, res: Response) => {
     try {
-        const {name, description} = req.body;
-        const newProfile = await prisma.profile.upsert({
-            create: {name, description},
-            update: {name, description},
-            where: {name}
+        const {name, description, roleId} = req.body;
+        const existingProfile = await prisma.profile.findUnique({
+            where: { name },
+            include: { roles: true }
         });
-        res.json({
-            newProfile,
-            msg: `Profile ${newProfile.name} created`
-        });
+
+        if(existingProfile){
+            const existingRole = existingProfile.roles.find((role: { roleId: number }) => role.roleId === roleId);
+        
+            if (existingRole){
+                const updatedProfile = await prisma.profile.update({
+                    where: {name},
+                    data: {
+                        description,
+                        active: 1
+                    }
+                });
+
+                res.json({
+                    updatedProfile,
+                    msg: `Profile ${updatedProfile.name} updated with existing role`
+                });
+            }
+            else{
+                const updatedProfile = await prisma.profile.update({
+                    where: { name },
+                    data: {
+                        description,
+                        active: 1,
+                        roles: {
+                            create: [
+                                {
+                                    roleId
+                                }
+                            ]
+                        }
+                    }
+                });
+
+                res.json({
+                    updatedProfile,
+                    msg: `User ${updatedProfile.name} updated and new role assigned`
+                });
+            }
+        }
+        else{
+            const newProfile = await prisma.profile.create({
+                data: {
+                    name,
+                    description,
+                    roles: {
+                        create: [
+                            {
+                                roleId
+                            }
+                        ]
+                    }
+                }
+            });
+
+            res.json({
+                newProfile,
+                msg: `User ${newProfile.name} created`
+            });
+        }
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -75,25 +130,57 @@ export const updateProfileById = async(req: Request, res: Response) => {
     try {
         const {id} = req.params;
         const idNumber = parseInt(id, 10);
-        const {name, description} = req.body;
+        const {name, description, roleId} = req.body;
         if (!id || isNaN(idNumber)) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
-        const updatingProfile = await prisma.profile.findFirst({where: {id: idNumber}});
+        
+        const updatingProfile = await prisma.profile.findFirst({where: {id: idNumber}, include: { roles: true }});
+        
         if(!updatingProfile)
             res.status(404).json({msg: 'Profile not found', error: false, data:[]});
         
-        await prisma.profile.update({
-            where: {
-                id: idNumber
-            },
-            data: {
-                name, description
-            }
-        });
-        res.status(200).json({
-            msg: `Profile ${name} updated`,
-            error: false,
-            records: 1
-        });
+        const existingRole = updatingProfile?.roles.find((role: { roleId: number }) => role.roleId === roleId);
+        
+        if (existingRole){
+            const updatedProfile = await prisma.profile.update({
+                where: {
+                    id: idNumber
+                },
+                data: {
+                    description,
+                    active: 1
+                }
+            });
+
+            res.status(200).json({
+                updatedProfile,
+                msg: `Profile ${updatedProfile.name} updated with existing role`,
+                error: false,
+                records: 1
+            });
+        }
+        else{
+            const updatedProfile = await prisma.profile.update({
+                where: {
+                    id: idNumber
+                },
+                data: {
+                    description,
+                    active: 1,
+                    roles: {
+                        create: [
+                            {
+                                roleId
+                            }
+                        ]
+                    }
+                }
+            });
+
+            res.status(200).json({
+                updatedProfile,
+                msg: `User ${updatedProfile.name} updated and new role assigned`
+            });
+        }
     } catch (error) {
         console.log(error);
         res.status(500).json({

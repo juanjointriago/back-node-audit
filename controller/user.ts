@@ -12,7 +12,6 @@ export const getAllUsers = async(req: Request, res: Response) => {
 
         const users = await prisma.user.findMany({
             where: {active : 1},
-            include: { roles: true },
             skip,
             take: pageSize
         });
@@ -38,9 +37,7 @@ export const getUserById = async(req: Request, res: Response) => {
         const idNumber = parseInt(id, 10);
         if (!id || isNaN(idNumber)) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
         
-        const existingUser = await prisma.user.findFirst({
-            where: {id: idNumber},
-            include: { roles: true }});
+        const existingUser = await prisma.user.findFirst({where: {id: idNumber}});
         
         if(!existingUser)
             res.status(404).json({msg: 'User not found', error: false, data:[]});
@@ -69,9 +66,7 @@ export const getUserByUsername = async(req: Request, res: Response) => {
         const {username} = req.body;
         if (!username) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
         
-        const existingUser = await prisma.user.findFirst({
-            where: {username},
-            include: { roles: true }});
+        const existingUser = await prisma.user.findFirst({where: {username}});
         
         if(!existingUser){
             if(req.originalUrl.includes('forgotPassword')) await saveLog('BD', 'AUDIT', req.originalUrl, `Forgot Password`, `User not found: ${username}`, '', req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
@@ -100,83 +95,17 @@ export const getUserByUsername = async(req: Request, res: Response) => {
 
 export const saveUser = async(req: Request, res: Response) => {
     try {
-        const {username, password, email, profileId, roleId} = req.body; 
+        const {username, password, email, profileId} = req.body; 
         const encryptedPassword = await encryptPassword(password);
-
-        const existingUser = await prisma.user.findUnique({
-            where: { username },
-            include: { roles: true }
+        const newUser = await prisma.user.upsert({
+            create: {username, password: encryptedPassword, email, profileId, active: 1},
+            update: {username, password: encryptedPassword, email, profileId, active: 1},
+            where: {username}
         });
-        if (existingUser) {
-            const existingRole = existingUser.roles.find((role: { roleId: number }) => role.roleId === roleId);
-            /* Confirmar la necesidad de esta validacion
-            const matchPasswords = await validatePassword(password, existingUser.password);
-            if(matchPasswords){
-                return res.status(400).json({ msg: 'New password cannot be the same as old one', error: true, data: [] });
-            } /* */
-
-            if (existingRole) {
-                const updatedUser = await prisma.user.update({
-                    where: { username },
-                    data: {
-                        password: encryptedPassword,
-                        email,
-                        profileId,
-                        active: 1
-                    }
-                });
-
-                res.json({
-                    updatedUser,
-                    msg: `User ${updatedUser.username} updated with existing role`
-                });
-            } 
-            else {
-                const updatedUser = await prisma.user.update({
-                    where: { username },
-                    data: {
-                        password: encryptedPassword,
-                        email,
-                        profileId,
-                        active: 1,
-                        roles: {
-                            create: [
-                                {
-                                    roleId
-                                }
-                            ]
-                        }
-                    }
-                });
-
-                res.json({
-                    updatedUser,
-                    msg: `User ${updatedUser.username} updated and new role assigned`
-                });
-            }
-        } 
-        else {
-            const newUser = await prisma.user.create({
-                data: {
-                    username,
-                    password: encryptedPassword,
-                    email,
-                    profileId,
-                    roles: {
-                        create: [
-                            {
-                                roleId
-                            }
-                        ]
-                    }
-                }
-            });
-
-            res.json({
-                newUser,
-                msg: `User ${newUser.username} created`
-            });
-        }
+        res.json({
+            newUser,
+            msg: `User ${newUser.username} created`
+        });
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -190,14 +119,11 @@ export const updateUserById = async(req: Request, res: Response) => {
     try {
         const {id} = req.params;
         const idNumber = parseInt(id, 10);
-        const {username, password, email, profileId, roleId} = req.body;
+        const {username, password, email, profileId} = req.body;
         const encryptedPassword = await encryptPassword(password);;
         if (!id || isNaN(idNumber)) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
         
-        const existingUser = await prisma.user.findFirst({
-            where: {id: idNumber},
-            include: { roles: true }
-        });
+        const existingUser = await prisma.user.findFirst({where: {id: idNumber}});
         
         if(!existingUser)
             res.status(404).json({msg: 'User not found', error: false, data:[]});
@@ -207,54 +133,24 @@ export const updateUserById = async(req: Request, res: Response) => {
         if(matchPasswords){
             return res.status(400).json({ msg: 'New password cannot be the same as old one', error: true, data: [] });
         } /* */
+        const updatedUser = await prisma.user.update({
+            where: {
+                id: idNumber
+            },
+            data: {
+                username, 
+                password: encryptedPassword, 
+                email, 
+                profileId,
+            }
+        });
 
-        const existingRole = existingUser.roles.find((role: { roleId: number }) => role.roleId === roleId);
-        if (existingRole) {
-            const updatedUser = await prisma.user.update({
-                where: {
-                    id: idNumber
-                },
-                data: {
-                    username, 
-                    password: encryptedPassword, 
-                    email, 
-                    profileId
-                }
-            });
-
-            res.status(200).json({
-                updatedUser,
-                msg: `User ${username} updated with existing role`,
-                error: false,
-                records: 1
-            });
-        }
-        else{
-            const updatedUser = await prisma.user.update({
-                where: {
-                    id: idNumber
-                },
-                data: {
-                    username, 
-                    password: encryptedPassword, 
-                    email, 
-                    profileId,
-                    roles: {
-                        create: [
-                            {
-                                roleId
-                            }
-                        ]
-                    }
-                }
-            });
-            res.status(200).json({
-                updatedUser,
-                msg: `User ${username} updated and new role assigned`,
-                error: false,
-                records: 1
-            });
-        }
+        res.status(200).json({
+            updatedUser,
+            msg: `User ${username} updated`,
+            error: false,
+            records: 1
+        });
 
     } catch (error) {
         console.log(error);
