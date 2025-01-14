@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 export const getAllUsers = async(req: Request, res: Response) => {
     try {
         const page = parseInt(req.query.page as string) | 1;
-        const pageSize = parseInt(req.query.pageSize as string) | 10;
+        const pageSize = parseInt(req.query.pageSize as string) | 100;
         const skip = (page - 1) * pageSize;
 
         const users = await prisma.user.findMany({

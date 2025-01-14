@@ -17,7 +17,7 @@ const prisma = new client_1.PrismaClient();
 const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const page = parseInt(req.query.page) | 1;
-        const pageSize = parseInt(req.query.pageSize) | 10;
+        const pageSize = parseInt(req.query.pageSize) | 100;
         const skip = (page - 1) * pageSize;
         const users = yield prisma.user.findMany({
             where: { active: 1 },
