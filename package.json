@@ -20,7 +20,7 @@
     "@types/node": "^22.10.2",
     "@types/nodemailer": "^6.4.17",
     "nodemon": "^3.1.9",
-    "npx": "^10.2.2",
+    "npx": "^3.0.0",
     "prisma": "^6.0.1",
     "tsc": "^2.0.4",
     "tslint": "^6.1.3",
