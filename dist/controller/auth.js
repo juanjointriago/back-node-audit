@@ -35,12 +35,12 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         validPassword = yield (0, password_1.validatePassword)(password, existingUser.password);
         if (!validPassword) {
             const defaultEmails = (yield prisma.param.findUnique({ where: { key: 'DEFAULT_EMAILS' } })) || '';
-            const defaultTextEmail = yield prisma.param.findUnique({ where: { key: 'DEFAULT_TEXT_EMAIL' } });
-            const defaultHtmlEmail = yield prisma.param.findUnique({ where: { key: 'DEFAULT_HTML_EMAIL' } });
+            const defaultTextEmail = (yield prisma.param.findUnique({ where: { key: 'DEFAULT_TEXT_EMAIL' } })) || '';
+            const defaultHtmlEmail = (yield prisma.param.findUnique({ where: { key: 'DEFAULT_HTML_EMAIL' } })) || '';
             yield (0, log_1.saveLog)('BD', 'AUDIT', req.originalUrl, `Login attempt failed`, /*JSON.stringify(req.body)*/ 'Invalid Password', username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
             if (!defaultEmails)
-                (0, mail_1.sendEmail)(process.env.EMAIL || '', defaultEmails === null || defaultEmails === void 0 ? void 0 : defaultEmails.value, defaultTextEmail.value, defaultHtmlEmail === null || defaultHtmlEmail === void 0 ? void 0 : defaultHtmlEmail.value, 'Login Failed!', 'Info');
-            return res.status(404).json({ msg: 'Invalid Password', error: false, data: log });
+                (0, mail_1.sendEmail)(process.env.EMAIL || '', defaultEmails === null || defaultEmails === void 0 ? void 0 : defaultEmails.value, defaultTextEmail.value, defaultHtmlEmail.value, 'Login Failed!', 'Info');
+            return res.status(404).json({ msg: 'Invalid Password', error: false, data: [] });
         }
         generatedToken = yield (0, generate_jwt_1.generateJWT)(existingUser.id);
         yield (0, log_1.saveLog)('BD', 'AUDIT', req.originalUrl, `Login success`, JSON.stringify({ token: generatedToken }), username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'INFO');
