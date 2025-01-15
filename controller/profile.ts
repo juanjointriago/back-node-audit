@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 export const getAllProfiles = async(req: Request, res: Response) => {
     try {
-        const profiles = await prisma.profile.findMany({where: {active : 1}, });
+        const profiles = await prisma.profile.findMany({where: {active : 1}, include: { roles: true }});
         res.json({
             msg: 'ok',
             error: false,
