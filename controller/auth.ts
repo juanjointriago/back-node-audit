@@ -27,13 +27,13 @@ export const login = async(req: Request, res: Response) => {
         validPassword = await validatePassword(password, existingUser.password);
         if(!validPassword){
             const defaultEmails = await prisma.param.findUnique({where: { key: 'DEFAULT_EMAILS' }}) || '';
-            const defaultTextEmail = await prisma.param.findUnique({where: { key: 'DEFAULT_TEXT_EMAIL' }});
-            const defaultHtmlEmail = await prisma.param.findUnique({where: { key: 'DEFAULT_HTML_EMAIL' }});
+            const defaultTextEmail = await prisma.param.findUnique({where: { key: 'DEFAULT_TEXT_EMAIL' }}) || '';
+            const defaultHtmlEmail = await prisma.param.findUnique({where: { key: 'DEFAULT_HTML_EMAIL' }}) || '';
             await saveLog('BD', 'AUDIT', req.originalUrl, `Login attempt failed`, /*JSON.stringify(req.body)*/ 'Invalid Password', username, req.ip || '', process.env.APPNAME || '', process.env.VERSION || 'ERROR');
             if(!defaultEmails)
-                sendEmail(process.env.EMAIL || '', defaultEmails?.value, defaultTextEmail.value, defaultHtmlEmail?.value, 'Login Failed!','Info');
+                sendEmail(process.env.EMAIL || '', defaultEmails?.value, defaultTextEmail.value, defaultHtmlEmail.value, 'Login Failed!','Info');
             
-            return res.status(404).json({msg: 'Invalid Password', error: false, data:log});
+            return res.status(404).json({msg: 'Invalid Password', error: false, data:[]});
         }
             
         
