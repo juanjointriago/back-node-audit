@@ -11,7 +11,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  //directUrl = env("DIRECT_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User{
@@ -40,7 +40,17 @@ model Role {
   name        String    @unique
   description String?
   active      Int?      @default(1)
+  roleDetails RoleDetail[]
   profiles    ProfileRole[]
+}
+
+model RoleDetail{
+  id          Int       @id @default(autoincrement())
+  roleId      Int
+  role        Role   @relation(fields: [roleId], references: [id]) 
+  entity      String
+  active      Int?    @default(1)
+  @@unique([roleId, entity])
 }
 
 model ProfileRole {

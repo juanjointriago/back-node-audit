@@ -93,7 +93,7 @@ const saveProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 });
                 res.json({
                     updatedProfile,
-                    msg: `User ${updatedProfile.name} updated with existing roles`
+                    msg: `Profile ${updatedProfile.name} updated with existing roles`
                 });
             }
         }
@@ -109,7 +109,7 @@ const saveProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             });
             res.json({
                 newProfile,
-                msg: `User ${newProfile.name} created with roles`
+                msg: `Profile ${newProfile.name} created with roles`
             });
         }
     }

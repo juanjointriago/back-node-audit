@@ -91,7 +91,7 @@ export const saveProfile = async(req: Request, res: Response) => {
 
                 res.json({
                     updatedProfile,
-                    msg: `User ${updatedProfile.name} updated with existing roles`
+                    msg: `Profile ${updatedProfile.name} updated with existing roles`
                 });
             }
         }
@@ -108,7 +108,7 @@ export const saveProfile = async(req: Request, res: Response) => {
 
             res.json({
                 newProfile,
-                msg: `User ${newProfile.name} created with roles`
+                msg: `Profile ${newProfile.name} created with roles`
             });
         }
     } catch (error) {
