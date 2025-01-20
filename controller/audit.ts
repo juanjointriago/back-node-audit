@@ -93,7 +93,7 @@ export const inactiveNotify = async(req: Request, res: Response) => {
         const {entity} = req.body;
         const existingEntity = await prisma.notifyEntity.findFirst({where: {entity}});
         if(!existingEntity)
-            res.status(404).json({msg: 'Entity not found', error: false, data:[]});
+            return res.status(404).json({msg: 'Entity not found', error: false, data:[]});
 
         await prisma.notifyEntity.update({
             where: {
@@ -120,7 +120,7 @@ export const sendEmailLog = async(req: Request, res: Response) => {
     try {
         console.log(req.body);
         const {emails, textEmail, subject} = req.body;
-        if(! (emails || textEmail || subject) ) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
+        if(! (emails || textEmail || subject) ) return res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
 
         sendEmail(process.env.EMAIL || '', emails, '', textEmail, subject, 'Info');
 

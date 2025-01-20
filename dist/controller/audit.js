@@ -105,7 +105,7 @@ const inactiveNotify = (req, res) => __awaiter(void 0, void 0, void 0, function*
         const { entity } = req.body;
         const existingEntity = yield prisma.notifyEntity.findFirst({ where: { entity } });
         if (!existingEntity)
-            res.status(404).json({ msg: 'Entity not found', error: false, data: [] });
+            return res.status(404).json({ msg: 'Entity not found', error: false, data: [] });
         yield prisma.notifyEntity.update({
             where: {
                 entity: entity
@@ -132,7 +132,7 @@ const sendEmailLog = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         console.log(req.body);
         const { emails, textEmail, subject } = req.body;
         if (!(emails || textEmail || subject))
-            res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
+            return res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
         (0, mail_1.sendEmail)(process.env.EMAIL || '', emails, '', textEmail, subject, 'Info');
         res.status(200).json({ msg: 'Email sent', error: false, data: [] });
     }
