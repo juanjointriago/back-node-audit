@@ -15,5 +15,17 @@ router.post('/inactive-audit', [
     (0, express_validator_1.check)('entity', 'Entity is required').not().isEmpty(),
     validate_fields_1.validateFields
 ], validate_jwt_1.validateJWT, audit_1.inactiveTrigger);
+router.post('/active-Notify', [
+    (0, express_validator_1.check)('entity', 'Entity is required').not().isEmpty(),
+    validate_fields_1.validateFields
+], validate_jwt_1.validateJWT, audit_1.activeNotify);
+router.post('/inactive-Notify', [
+    (0, express_validator_1.check)('entity', 'Entity is required').not().isEmpty(),
+    validate_fields_1.validateFields
+], validate_jwt_1.validateJWT, audit_1.inactiveNotify);
+router.post('/sendEmailLog', [
+    (0, express_validator_1.check)('emails', 'Email is required').not().isEmpty(),
+    validate_fields_1.validateFields
+], audit_1.sendEmailLog);
 exports.default = router;
 //# sourceMappingURL=audit.js.map

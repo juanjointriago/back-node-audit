@@ -9,8 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getEntities = exports.inactiveTrigger = exports.activeTrigger = void 0;
+exports.sendEmailLog = exports.inactiveNotify = exports.activeNotify = exports.getEntities = exports.inactiveTrigger = exports.activeTrigger = void 0;
 const client_1 = require("@prisma/client");
+const mail_1 = require("./mail");
 const prisma = new client_1.PrismaClient();
 const activeTrigger = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -78,4 +79,71 @@ const getEntities = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.getEntities = getEntities;
+const activeNotify = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { entity } = req.body;
+        yield prisma.notifyEntity.upsert({
+            create: { entity, notify: 1 },
+            update: { notify: 1 },
+            where: { entity }
+        });
+        res.status(200).json({
+            msg: `Notify activated on Table ${entity}`
+        });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Something went wrong',
+            error
+        });
+    }
+});
+exports.activeNotify = activeNotify;
+const inactiveNotify = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { entity } = req.body;
+        const existingEntity = yield prisma.notifyEntity.findFirst({ where: { entity } });
+        if (!existingEntity)
+            res.status(404).json({ msg: 'Entity not found', error: false, data: [] });
+        yield prisma.notifyEntity.update({
+            where: {
+                entity: entity
+            },
+            data: {
+                notify: 0
+            }
+        });
+        res.status(200).json({
+            msg: `Notify inactivated on Table ${entity}`
+        });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Something went wrong',
+            error
+        });
+    }
+});
+exports.inactiveNotify = inactiveNotify;
+const sendEmailLog = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log(req.body);
+        const { emails, textEmail, subject } = req.body;
+        if (!(emails || textEmail || subject))
+            res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
+        (0, mail_1.sendEmail)(process.env.EMAIL || '', emails, '', textEmail, subject, 'Info');
+        res.status(200).json({ msg: 'Email sent', error: false, data: [] });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Somenthing went wrong',
+            error: error,
+            data: []
+        });
+    }
+});
+exports.sendEmailLog = sendEmailLog;
 //# sourceMappingURL=audit.js.map

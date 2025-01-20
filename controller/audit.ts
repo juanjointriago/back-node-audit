@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
-
+import { sendEmail } from "./mail";
 const prisma = new PrismaClient();
 
 export const activeTrigger = async(req: Request, res: Response) => {
@@ -65,4 +65,74 @@ export const getEntities = async(req: Request, res: Response) => {
             error
         });
     }
+}
+
+export const activeNotify = async(req: Request, res: Response) => {
+    try {
+        const {entity} = req.body;
+        await prisma.notifyEntity.upsert({
+            create: {entity, notify: 1},
+            update: {notify: 1},
+            where : {entity}
+        })
+
+        res.status(200).json({
+            msg: `Notify activated on Table ${entity}`
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Something went wrong',
+            error
+        });
+    }
+}
+
+export const inactiveNotify = async(req: Request, res: Response) => {
+    try {
+        const {entity} = req.body;
+        const existingEntity = await prisma.notifyEntity.findFirst({where: {entity}});
+        if(!existingEntity)
+            res.status(404).json({msg: 'Entity not found', error: false, data:[]});
+
+        await prisma.notifyEntity.update({
+            where: {
+                entity: entity
+            },
+            data: {
+                notify : 0
+            }
+        })
+
+        res.status(200).json({
+            msg: `Notify inactivated on Table ${entity}`
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Something went wrong',
+            error
+        });
+    }
+}
+
+export const sendEmailLog = async(req: Request, res: Response) => {
+    try {
+        console.log(req.body);
+        const {emails, textEmail, subject} = req.body;
+        if(! (emails || textEmail || subject) ) res.status(400).json({ msg: 'Bad request', error: true, records: 0, data: [] });
+
+        sendEmail(process.env.EMAIL || '', emails, '', textEmail, subject, 'Info');
+
+        res.status(200).json({msg: 'Email sent', error: false, data:[]});
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Somenthing went wrong',
+            error: error,
+            data: []
+
+        });
+    }
+    
 }
